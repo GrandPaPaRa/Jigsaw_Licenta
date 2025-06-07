@@ -8,9 +8,9 @@ public enum PieceType {
     DOT,
     LINE,
     LED,
-    ZED,
     NED,
-    SQUARE;
+    SQUARE,
+    ZED;
 
     private static final Random random = new Random();
     private static final double EPSILON = 1e-6; // A small tolerance for floating-point comparison

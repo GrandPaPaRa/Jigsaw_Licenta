@@ -6,10 +6,7 @@ public class Piece {
     private PieceType type;
     private boolean isPlaced;
     private ImageView imageView; // Reference to the ImageView for this piece
-
-    // You might still want other properties like original coordinates, correct position, etc.
-    // private int currentGridX;
-    // private int currentGridY;
+    private int actionSpot; // In witch spot the top left corner of the piece is placed
 
     // Constructor that takes the type and its view
     public Piece(PieceType type, ImageView imageView) {
@@ -29,6 +26,12 @@ public class Piece {
     }
     public boolean isPlaced() {
         return isPlaced;
+    }
+    public int getActionSpot() {
+        return actionSpot;
+    }
+    public void setActionSpot(int actionSpot) {
+        this.actionSpot = actionSpot;
     }
     public ImageView getImageView() {
         return imageView;

@@ -1,24 +1,119 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    tools:context=".ui.main.SettingsFragment">
 
+    <!-- Piece & Board Scale Section -->
     <TextView
+        android:id="@+id/labelImageScale"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Image Scale"
-        android:textSize="18sp"/>
+        android:text="Piece &amp; Board Scale"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.slider.Slider
         android:id="@+id/scaleSlider"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:stepSize="0.1"
         android:valueFrom="0.5"
         android:valueTo="2.0"
-        android:stepSize="0.1"
-        android:value="1.0" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelImageScale" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/scaleValueText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/scaleSlider"
+        app:layout_constraintTop_toBottomOf="@id/scaleSlider"
+        tools:text="1.0x" />
+
+    <!-- Divider -->
+    <View
+        android:id="@+id/divider1"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintTop_toBottomOf="@id/scaleValueText" />
+
+    <!-- Board Rows Section -->
+    <TextView
+        android:id="@+id/labelBoardRows"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Board Rows"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider1" />
+
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/rowsSlider"
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:stepSize="2"
+        android:valueFrom="4"
+        android:valueTo="6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelBoardRows" />
+
+    <TextView
+        android:id="@+id/rowsValueText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/rowsSlider"
+        app:layout_constraintTop_toBottomOf="@id/rowsSlider"
+        tools:text="4 Rows" />
+
+    <!-- Board Columns Section -->
+    <TextView
+        android:id="@+id/labelBoardCols"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Board Columns"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rowsValueText" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/colsSlider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:stepSize="2"
+        android:valueFrom="6"
+        android:valueTo="10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelBoardCols" />
+
+    <TextView
+        android:id="@+id/colsValueText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/colsSlider"
+        app:layout_constraintTop_toBottomOf="@id/colsSlider"
+        tools:text="6 Columns" />
+
+    <!-- Standard Button -->
+    <Button
+        android:id="@+id/standardButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Standard (4x6)"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/colsValueText" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

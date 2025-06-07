@@ -7,32 +7,135 @@ import java.util.List;
 import java.util.Random;
 
 public class Jigsaw implements Environment<Jigsaw, Byte> {
-    public static final int ROWS = 4;
-    public static final int COLS = 6;
-    public static final int SKIP_ACTION = 24;
-    public static final int TOTAL_FIGURES = 6;
-    public static final int TOTAL_ACTIONS = 25;
 
-    public static final int[] ALL_FIGURES = {
-            0b100000000000000000000000,
-            0b100000100000100000000000,
-            0b100000110000000000000000,
-            0b110000010000000000000000,
-            0b110000110000000000000000,
-            0b110000011000000000000000
-    };
+    // --- Default values (can be used as fallbacks or for a default constructor) ---
+    public static final int DEFAULT_ROWS = 4;
+    public static final int DEFAULT_COLS = 6;
+    public static final int TOTAL_FIGURES = 6; // This remains constant as per your request
 
-    public int board;
-    public byte figureIndex;
-    public byte quantity;
+    // --- Instance-specific fields ---
+    private int rows;
+    private int cols;
+    private int skipActionValue; // Renamed from SKIP_ACTION to avoid confusion with static final
+    private int totalActionsValue; // Renamed from TOTAL_ACTIONS
+    private long[] figures;
+
+    public long board; // Bitmask for the placed pieces
+    private int figureIndex;
+    public int quantity;
 
     private static final Random random = new Random();
 
+    /**
+     * Default constructor: uses DEFAULT_ROWS and DEFAULT_COLS.
+     */
     public Jigsaw() {
+        this(DEFAULT_ROWS, DEFAULT_COLS);
+    }
+
+    /**
+     * Constructor with specified rows and columns.
+     *
+     * @param rows The number of rows for this Jigsaw board.
+     * @param cols The number of columns for this Jigsaw board.
+     * @throws IllegalArgumentException if rows or cols are not positive.
+     */
+    public Jigsaw(int rows, int cols) {
+        if (rows <= 0 || cols <= 0) {
+            throw new IllegalArgumentException("Rows and columns must be positive.");
+        }
+        this.rows = rows;
+        this.cols = cols;
+        this.figures = generateFigures();
+        this.skipActionValue = rows * cols;
+        this.totalActionsValue = this.skipActionValue + 1;
+
         this.board = 0;
         this.figureIndex = randomFigure();
         this.quantity = 0;
+
     }
+
+    // --- Getters ---
+    public int getRows() {
+        return rows;
+    }
+
+    public int getCols() {
+        return cols;
+    }
+
+    // Making skipAction and totalActions accessible if needed, but they are derived
+    public int getSkipActionValue() {
+        return skipActionValue;
+    }
+
+    public int getTotalActionsValue() {
+        return totalActionsValue;
+    }
+
+    public int getFigureIndex() {
+        return figureIndex;
+    }
+
+    public void setFigureIndex(int figureIndex) {
+        if (figureIndex < 0 || figureIndex >= TOTAL_FIGURES) {
+            throw new IllegalArgumentException("Figure index must be between 0 and " + (TOTAL_FIGURES - 1));
+        }
+        this.figureIndex = figureIndex;
+    }
+    public long[] generateFigures() {
+        List<Long> figures = new ArrayList<>();
+
+        // 1. Single dot (top-left)
+        figures.add(1L << (rows * cols - 1));
+
+        // 2. Vertical line (3 dots)
+        if (rows >= 3) {
+            long vertical = 0;
+            for (int i = 0; i < 3; i++) {
+                vertical |= (1L << (rows * cols - 1 - i * cols));
+            }
+            figures.add(vertical);
+        }
+
+        // 3. L-shape
+        if (rows >= 2 && cols >= 2) {
+            long lShape = (1L << (rows * cols - 1)) |
+                    (1L << (rows * cols - 1 - cols)) |
+                    (1L << (rows * cols - 1 - cols - 1));
+            figures.add(lShape);
+        }
+
+        // 4. Reverse L-shape
+        if (rows >= 2 && cols >= 2) {
+            long reverseL = (1L << (rows * cols - 1)) |
+                    (1L << (rows * cols - 2)) |
+                    (1L << (rows * cols - 1 - cols - 1));
+            figures.add(reverseL);
+        }
+
+        // 5. Square (2x2)
+        if (rows >= 2 && cols >= 2) {
+            long square = (1L << (rows * cols - 1)) |
+                    (1L << (rows * cols - 1 - 1)) |
+                    (1L << (rows * cols - 1 - cols)) |
+                    (1L << (rows * cols - 1 - cols - 1));
+            figures.add(square);
+        }
+
+        // 6. Z-shape
+        if (rows >= 2 && cols >= 3) {
+            long zPiece = (1L << (rows * cols - 1)) |
+                    (1L << (rows * cols - 2)) |
+                    (1L << (rows * cols - 1 - cols - 1)) |
+                    (1L << (rows * cols - 1 - cols - 2));
+            figures.add(zPiece);
+        }
+
+        return figures.stream().mapToLong(i->i).toArray();
+    }
+
 
     private static byte randomFigure() {
         return (byte) random.nextInt(TOTAL_FIGURES);
@@ -43,28 +146,28 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
     }
 
     public void toggleCoord(byte row, byte col) {
-        int x = 1 << (ROWS * COLS - 1);
-        this.board ^= (x >>> (row * COLS + col));
+        int x = 1 << (rows * cols - 1);
+        this.board ^= (x >>> (row * cols + col));
     }
 
     public boolean coord(byte row, byte col) {
-        int x = 1 << (ROWS * COLS - 1);
-        return (this.board & (x >>> (row * COLS + col))) != 0;
+        int x = 1 << (rows * cols - 1);
+        return (this.board & (x >>> (row * cols + col))) != 0;
     }
 
-    public int figure() {
-        return ALL_FIGURES[figureIndex];
+    public long figure() {
+        return figures[figureIndex];
     }
 
     public boolean inFigure(byte action, byte index) {
-        return ((figure() >>> action) & ((1 << (ROWS * COLS - 1)) >>> index)) != 0;
+        return ((figure() >>> action) & ((1L << (rows * cols - 1)) >>> index)) != 0;
     }
 
     private boolean isLegal(byte action) {
-        if (action == SKIP_ACTION) return true;
+        if (action == skipActionValue) return true;
 
-        int figure = figure();
-        int shifted = figure >>> action;
+        long figure = figure();
+        long shifted = figure >>> action;
 
         if ((board & shifted) != 0) return false;
 
@@ -72,10 +175,35 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
         if ((shifted << action) != figure) return false;
 
         // Check shape doesn’t overflow horizontally
-        int columnMask = ~(0xFF << COLS);
-        for (int row = 0; row < ROWS; row++) {
-            int figureRow = (figure >>> (COLS * row)) & columnMask;
-            if (((figureRow >>> (action % COLS)) << (action % COLS)) != figureRow) {
+        //int columnMask = ~(0xFF << cols);
+        int columnMask = (1 << cols) - 1;
+        for (int row = 0; row < rows; row++) {
+            long figureRow = (figure >>> (cols * row)) & columnMask;
+            if (((figureRow >>> (action % cols)) << (action % cols)) != figureRow) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean isLegal(byte action, PieceType pieceType) {
+        if (action == skipActionValue) return true;
+
+        long figure = figures[pieceType.ordinal()];
+        long shifted = figure >>> action;
+
+        // Ensure shape fits after right shift
+        if ((shifted << action) != figure) return false;
+
+        if ((board & shifted) != 0) return false;
+
+        // Check shape doesn’t overflow horizontally
+        //int columnMask = ~(0xFF << cols);
+        int columnMask = (1 << cols) - 1;
+        for (int row = 0; row < rows; row++) {
+            long figureRow = (figure >>> (cols * row)) & columnMask;
+            if (((figureRow >>> (action % cols)) << (action % cols)) != figureRow) {
                 return false;
             }
         }
@@ -85,22 +213,33 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
 
     @Override
     public boolean hasFinished() {
-        return this.board == 0xFFFFFF;
+        //return this.board == 0xFFFFFF;
+        return board == (1L << (rows * cols)) - 1;
     }
 
     @Override
     public void performAction(Byte action) {
-        if (action != SKIP_ACTION) {
+        if (action != skipActionValue) {
             this.board |= (figure() >>> action);
         }
         this.quantity++;
         this.figureIndex = randomFigure();
     }
 
+    public void performAction(int action, Piece piece) {
+        if (action != skipActionValue) {
+            this.board |= (figure() >>> action);
+            piece.setPlaced(true);
+            piece.setActionSpot(action);
+        }
+        this.quantity++;
+
+    }
+
     @Override
     public List<Byte> legalActions() {
         List<Byte> actions = new ArrayList<>();
-        for (byte i = 0; i < TOTAL_ACTIONS; i++) {
+        for (byte i = 0; i < totalActionsValue; i++) {
             if (isLegal(i)) {
                 actions.add(i);
             }
@@ -127,14 +266,14 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
         StringBuilder sb = new StringBuilder();
         sb.append("=========").append(quantity).append("=========\n");
 
-        int boardMask = 1 << (ROWS * COLS - 1);
-        int figureMask = 1 << (ROWS * COLS - 1);
+        int boardMask = 1 << (rows * cols - 1);
+        int figureMask = 1 << (rows * cols - 1);
 
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLS; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 if ((board & boardMask) != 0) {
                     sb.append("🟩");
-                } else if (isLegal((byte)(i * COLS + j))) {
+                } else if (isLegal((byte)(i * cols + j))) {
                     sb.append("🟦");
                 } else {
                     sb.append("⬛");
@@ -144,7 +283,7 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
 
             sb.append(" ");
 
-            for (int j = 0; j < COLS; j++) {
+            for (int j = 0; j < cols; j++) {
                 if ((figure() & figureMask) != 0) {
                     sb.append("🟥");
                 } else {
