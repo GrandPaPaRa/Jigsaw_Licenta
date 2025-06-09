@@ -1,121 +1,137 @@
 package com.example.jigsaw_licenta.model;
 
 import com.example.jigsaw_licenta.utils.Config;
-import com.example.jigsaw_licenta.utils.Environment;
-import com.example.jigsaw_licenta.utils.Stats;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
-public class Tree<T extends Environment<T, A>, A> {
-    private List<Node<A>> nodes;
-    private T rootState;
-    private int rootIndex;
-    private Config config;
+public class Tree {
+    private final Config config;
+    private final List<Node> nodes;
+    private final Jigsaw rootState;
+    private final int rootIndex;
 
-    public Tree(T rootState, Config config) {
-        this.rootState = rootState;
+    public Tree(Jigsaw initialState, Config config) {
         this.config = config;
-        this.nodes = new ArrayList<>(config.maxIters);
-        this.rootIndex = 0;
-        nodes.add(new Node<>());
+        this.nodes = new ArrayList<>();
+        this.rootState = initialState.cloneState();
+        this.rootIndex = createNode();
     }
 
-    public void compute(Callback<T, A> callback) {
-        for (int iter = 1; iter <= config.maxIters; iter++) {
-            if (iter % config.callbackInterval == 0 || iter == config.maxIters) {
-                List<Stats.Pair<A, Integer>> actions = new ArrayList<>();
-                for (Map.Entry<A, Integer> entry : nodes.get(rootIndex).children.entrySet()) {
-                    actions.add(new Stats.Pair<>(entry.getKey(), nodes.get(entry.getValue()).visits));
+    public byte findBestAction() {
+        for (int iter = 0; iter < config.maxIters; iter++) {
+            if(iter % 1000 == 0) System.out.println("Iteration: " + iter);
+
+            Jigsaw state = rootState.cloneState();
+            int nodeIndex = rootIndex;
+            int depth = 0;
+
+            // Selection phase
+            while (!state.hasFinished() && depth < config.maxDepth) {
+                Node node = nodes.get(nodeIndex);
+                List<Byte> legalActions = state.legalActions();
+
+                if (node.children.size() < legalActions.size()) {
+                    break; // Not fully expanded
                 }
 
-                final int finalIter = iter;
-                final List<Stats.Pair<A, Integer>> finalActions = actions;
-
-                callback.call(new Stats<A>() {{
-                    iters = finalIter;
-                    this.actions = finalActions;
-                }});
+                byte bestAction = selectBestAction(nodeIndex, state);
+                state.performAction(bestAction);
+                nodeIndex = node.children.get(bestAction);
+                depth++;
             }
 
-            T state = rootState.cloneState();
-            int stateDepth = 0;
-            int index = select(rootIndex, config.c, state, stateDepth);
+            // Expansion
+            if (!state.hasFinished() && depth < config.maxDepth) {
+                Node node = nodes.get(nodeIndex);
+                List<Byte> legalActions = state.legalActions();
 
-            if (state.hasFinished() || stateDepth > config.maxDepth) {
-                backpropagate(state.eval(), 1, index);
-                continue;
-            }
+                for (byte action : legalActions) {
+                    if (!node.children.containsKey(action)) {
+                        int childIndex = createNode();
+                        nodes.get(childIndex).setParent(nodeIndex);
+                        node.setChild(action, childIndex);
 
-            index = expand(index, state);
-            int rolloutDepth = config.maxDepth - stateDepth;
-            int score = simulate(state, rolloutDepth);
-            backpropagate(score, 1, index);
-        }
-    }
+                        // Simulation
+                        int score = simulate(state.cloneState(), config.maxDepth - depth);
 
-    private int createNode() {
-        nodes.add(new Node<>());
-        return nodes.size() - 1;
-    }
-
-    private int select(int index, float c, T state, int depth) {
-        Node<A> node = nodes.get(index);
-        if (state.hasFinished()) return index;
-
-        List<A> legalActions = state.legalActions();
-
-        boolean fullyExpanded = legalActions.stream().allMatch(a -> node.children.containsKey(a));
-        if (!fullyExpanded) return index;
-
-        A bestAction = legalActions.stream().max(Comparator.comparingDouble(a -> {
-            int childIndex = node.children.get(a);
-            return nodes.get(childIndex).ucb(c, node.visits);
-        })).orElse(null);
-
-        if (bestAction == null) return index;
-
-        state.performAction(bestAction);
-        return select(node.children.get(bestAction), c, state, depth + 1);
-    }
-
-    private int expand(int index, T state) {
-        List<A> legalActions = state.legalActions();
-        Node<A> node = nodes.get(index);
-
-        for (A action : legalActions) {
-            if (!node.children.containsKey(action)) {
-                int newIndex = createNode();
-                nodes.get(newIndex).setParent(index);
-                node.setChild(action, newIndex);
-                return newIndex;
+                        // Backpropagation
+                        backpropagate(score, 1, childIndex);
+                        break;
+                    }
+                }
+            } else {
+                // Terminal state or max depth reached
+                int score = state.eval();
+                backpropagate(score, 1, nodeIndex);
             }
         }
-        throw new RuntimeException("No expandable action found");
+
+        return getMostVisitedAction(rootIndex);
     }
 
-    private int simulate(T state, int maxDepth) {
+    private byte selectBestAction(int nodeIndex, Jigsaw state) {
+        Node node = nodes.get(nodeIndex);
+        byte bestAction = -1;
+        double bestValue = Double.NEGATIVE_INFINITY;
+
+        for (Map.Entry<Byte, Integer> entry : node.children.entrySet()) {
+            Node child = nodes.get(entry.getValue());
+            float value = child.ucb(config.c, node.visits);
+            if (value > bestValue) {
+                bestValue = value;
+                bestAction = entry.getKey();
+            }
+        }
+
+        return bestAction;
+    }
+
+    private int simulate(Jigsaw state, int maxDepth) {
         int depth = 0;
         Random random = new Random();
 
         while (!state.hasFinished() && depth < maxDepth) {
-            List<A> legalActions = state.legalActions();
-            A randomAction = legalActions.get(random.nextInt(legalActions.size()));
+            List<Byte> actions = state.legalActions();
+            if (actions.isEmpty()) break;
+
+            byte randomAction = actions.get(random.nextInt(actions.size()));
             state.performAction(randomAction);
             depth++;
         }
+
         return state.eval();
     }
 
-    private void backpropagate(int score, int visits, int index) {
-        Integer cursor = index;
-        while (cursor != null) {
-            Node<A> node = nodes.get(cursor);
-            node.update(score, visits);
-            cursor = node.parent;
+    private void backpropagate(int winDelta, int visitDelta, int nodeIndex) {
+        while (nodeIndex != -1) {
+            Node node = nodes.get(nodeIndex);
+            node.update(winDelta, visitDelta);
+            nodeIndex = node.parent != null ? node.parent : -1;
         }
     }
 
-    public interface Callback<T, A> {
-        void call(Stats<A> stats);
+    private byte getMostVisitedAction(int nodeIndex) {
+        Node node = nodes.get(nodeIndex);
+        byte bestAction = -1;
+        int mostVisits = -1;
+
+        for (Map.Entry<Byte, Integer> entry : node.children.entrySet()) {
+            Node child = nodes.get(entry.getValue());
+            if (child.visits > mostVisits) {
+                mostVisits = child.visits;
+                bestAction = entry.getKey();
+            }
+        }
+
+        return bestAction;
+    }
+
+    private int createNode() {
+        int index = nodes.size();
+        nodes.add(new Node());
+        return index;
     }
 }

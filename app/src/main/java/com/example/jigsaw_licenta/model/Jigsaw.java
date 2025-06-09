@@ -12,6 +12,7 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
     public static final int DEFAULT_ROWS = 4;
     public static final int DEFAULT_COLS = 6;
     public static final int TOTAL_FIGURES = 6; // This remains constant as per your request
+    public static final int QUEUE_CAPACITY = 50;
 
     // --- Instance-specific fields ---
     private int rows;
@@ -19,7 +20,7 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
     private int skipActionValue; // Renamed from SKIP_ACTION to avoid confusion with static final
     private int totalActionsValue; // Renamed from TOTAL_ACTIONS
     private long[] figures;
-
+    private PieceQueue pieceQueue;
     public long board; // Bitmask for the placed pieces
     private int figureIndex;
     public int quantity;
@@ -30,16 +31,24 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
      * Default constructor: uses DEFAULT_ROWS and DEFAULT_COLS.
      */
     public Jigsaw() {
-        this(DEFAULT_ROWS, DEFAULT_COLS);
+        this(DEFAULT_ROWS, DEFAULT_COLS, new PieceQueue(System.currentTimeMillis(),QUEUE_CAPACITY));
     }
 
-    /**
-     * Constructor with specified rows and columns.
-     *
-     * @param rows The number of rows for this Jigsaw board.
-     * @param cols The number of columns for this Jigsaw board.
-     * @throws IllegalArgumentException if rows or cols are not positive.
-     */
+    public Jigsaw(int rows, int cols, PieceQueue pieceQueue) {
+        if (rows <= 0 || cols <= 0) {
+            throw new IllegalArgumentException("Rows and columns must be positive.");
+        }
+        this.rows = rows;
+        this.cols = cols;
+        this.figures = generateFigures();
+        this.skipActionValue = rows * cols;
+        this.totalActionsValue = this.skipActionValue + 1;
+
+        this.pieceQueue = pieceQueue;
+        this.figureIndex = pieceQueue.peek().ordinal(); // Get first piece from queue
+        this.quantity = 0;
+
+    }
     public Jigsaw(int rows, int cols) {
         if (rows <= 0 || cols <= 0) {
             throw new IllegalArgumentException("Rows and columns must be positive.");
@@ -50,12 +59,11 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
         this.skipActionValue = rows * cols;
         this.totalActionsValue = this.skipActionValue + 1;
 
-        this.board = 0;
-        this.figureIndex = randomFigure();
+        this.pieceQueue = new PieceQueue(System.currentTimeMillis(),QUEUE_CAPACITY);
+        this.figureIndex = pieceQueue.peek().ordinal(); // Get first piece from queue
         this.quantity = 0;
 
     }
-
     // --- Getters ---
     public int getRows() {
         return rows;
@@ -84,6 +92,20 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
         }
         this.figureIndex = figureIndex;
     }
+
+    // Add these new methods
+    public PieceType getCurrentPieceType() {
+        return pieceQueue.peek();
+    }
+
+    public void consumePiece() {
+        pieceQueue.pop();
+        quantity++;
+        if (!pieceQueue.isEmpty()) {
+            figureIndex = pieceQueue.peek().ordinal();
+        }
+    }
+    //For this to work we need to sync the figures with the piece types(enums) (the orders)
     public long[] generateFigures() {
         List<Long> figures = new ArrayList<>();
 
@@ -136,24 +158,24 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
         return figures.stream().mapToLong(i->i).toArray();
     }
 
-
-    private static byte randomFigure() {
-        return (byte) random.nextInt(TOTAL_FIGURES);
-    }
-
-    public static byte index(byte row, byte col) {
-        return (byte) (6 * row + col);
-    }
-
-    public void toggleCoord(byte row, byte col) {
-        int x = 1 << (rows * cols - 1);
-        this.board ^= (x >>> (row * cols + col));
-    }
-
-    public boolean coord(byte row, byte col) {
-        int x = 1 << (rows * cols - 1);
-        return (this.board & (x >>> (row * cols + col))) != 0;
-    }
+//*****FOR DEBUG ONLY*****
+//    private static byte randomFigure() {
+//        return (byte) random.nextInt(TOTAL_FIGURES);
+//    }
+//
+//    public static byte index(byte row, byte col) {
+//        return (byte) (6 * row + col);
+//    }
+//
+//    public void toggleCoord(byte row, byte col) {
+//        int x = 1 << (rows * cols - 1);
+//        this.board ^= (x >>> (row * cols + col));
+//    }
+//
+//    public boolean coord(byte row, byte col) {
+//        int x = 1 << (rows * cols - 1);
+//        return (this.board & (x >>> (row * cols + col))) != 0;
+//    }
 
     public long figure() {
         return figures[figureIndex];
@@ -222,8 +244,7 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
         if (action != skipActionValue) {
             this.board |= (figure() >>> action);
         }
-        this.quantity++;
-        this.figureIndex = randomFigure();
+        consumePiece(); // Modified to use piece queue
     }
 
     public void performAction(int action, Piece piece) {
@@ -254,20 +275,19 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
 
     @Override
     public Jigsaw cloneState() {
-        Jigsaw copy = new Jigsaw();
+        Jigsaw copy = new Jigsaw(rows, cols, new PieceQueue(pieceQueue));
         copy.board = this.board;
         copy.figureIndex = this.figureIndex;
         copy.quantity = this.quantity;
         return copy;
     }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("=========").append(quantity).append("=========\n");
 
-        int boardMask = 1 << (rows * cols - 1);
-        int figureMask = 1 << (rows * cols - 1);
+        long boardMask = 1L << (rows * cols - 1);
+        long figureMask = 1L << (rows * cols - 1);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -278,7 +298,7 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
                 } else {
                     sb.append("⬛");
                 }
-                boardMask >>>= 1;
+                boardMask >>>= 1L;
             }
 
             sb.append(" ");
@@ -289,7 +309,7 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
                 } else {
                     sb.append("  ");
                 }
-                figureMask >>>= 1;
+                figureMask >>>= 1L;
             }
 
             sb.append("\n");

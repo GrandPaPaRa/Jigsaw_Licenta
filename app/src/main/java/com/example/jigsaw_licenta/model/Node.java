@@ -3,11 +3,11 @@ package com.example.jigsaw_licenta.model;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Node<A> {
+public class Node {
     public int visits;
     public int wins;
     public Integer parent; // null if root
-    public Map<A, Integer> children;
+    public Map<Byte, Integer> children;
 
     public Node() {
         this.visits = 0;
@@ -20,7 +20,7 @@ public class Node<A> {
         this.parent = parentIndex;
     }
 
-    public void setChild(A action, int childIndex) {
+    public void setChild(byte action, int childIndex) { // Changed from A to byte
         children.put(action, childIndex);
     }
 
@@ -30,7 +30,7 @@ public class Node<A> {
     }
 
     public float ucb(float c, int parentVisits) {
-        if (visits == 0) return Float.MAX_VALUE; // Encourage exploration
+        if (visits == 0) return Float.MAX_VALUE;
         float exploitation = (float) wins / visits;
         float exploration = c * (float) Math.sqrt(Math.log(parentVisits) / visits);
         return exploitation + exploration;

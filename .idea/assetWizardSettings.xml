@@ -33,8 +33,9 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="outline_auto_delete_24" />
-                            <entry key="sourceFile" value="E:\Licenta\Jigsaw_Licenta" />
+                            <entry key="assetSourceType" value="FILE" />
+                            <entry key="outputName" value="light_bulb_50" />
+                            <entry key="sourceFile" value="E:\Licenta\Vector Assets\light-bulb-svgrepo-com.svg" />
                           </map>
                         </option>
                       </PersistentState>

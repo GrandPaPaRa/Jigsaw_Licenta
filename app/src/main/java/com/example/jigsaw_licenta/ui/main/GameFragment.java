@@ -1,5 +1,7 @@
 package com.example.jigsaw_licenta.ui.main;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.graphics.Color;
@@ -29,6 +31,8 @@ import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.model.Jigsaw; // Assuming this is the correct path
 import com.example.jigsaw_licenta.model.Piece; // Your Piece model (that holds ImageView)
 import com.example.jigsaw_licenta.model.PieceType; // Your PieceType enum
+import com.example.jigsaw_licenta.model.Tree;
+import com.example.jigsaw_licenta.utils.Config;
 import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.example.jigsaw_licenta.viewmodel.SharedViewModel;
 
@@ -41,7 +45,12 @@ public class GameFragment extends Fragment {
     private GameViewModel gameViewModel;
     private GridLayout boardContainer;
     private ImageView ghostView;
+    private ImageView hintGhostView;
+    //just for reference to set the PiecePreview not the actual view
     private ImageView nextPiecePreview;
+    private List<PieceType> upcomingPieceList = new ArrayList<>();
+    private static final int PREVIEW_SIZE = 5;
+    private ImageView hintButton;
     private TextView movesTextView;
     private Button resetGameButton;
     private ImageView discardZone;
@@ -51,6 +60,7 @@ public class GameFragment extends Fragment {
     private Jigsaw jigsawGame;
     private int baseTileSize;
     private float snapThreshold ;
+    private byte hintAction = -1;
 
     public GameFragment() {
     }
@@ -74,6 +84,7 @@ public class GameFragment extends Fragment {
         movesTextView = view.findViewById(R.id.movesTextView);
         discardZone = view.findViewById(R.id.discardZone);
         gameContainer = view.findViewById(R.id.gameContainer);
+        hintButton = view.findViewById(R.id.HintButton);
         return view;
     }
 
@@ -95,12 +106,31 @@ public class GameFragment extends Fragment {
 
         initializeGameUI();
 
+        //Initialize game Queue Preview
+
+
         resetGameButton.setOnClickListener(v -> resetGame());
+
+        hintButton.setOnClickListener(v -> {
+            new Thread(() -> {
+                long startTime = System.nanoTime();
+
+                Tree tree = new Tree(jigsawGame, new Config());
+                int computedHintAction = tree.findBestAction();
+
+                long endTime = System.nanoTime();
+                double durationMs = (endTime - startTime) / 1_000_000.0;
+                System.out.printf("MCTS took %.2f ms%n", durationMs);
+
+                requireActivity().runOnUiThread(() -> showHint(computedHintAction));
+            }).start();
+        });
     }
 
     private void initializeGameUI() {
         // Reset ghost view
         ghostView = null;
+        hintGhostView = null;
 
         // Fetch rows and cols
         Integer savedRows = sharedViewModel.getBoardRows().getValue();
@@ -239,7 +269,7 @@ public class GameFragment extends Fragment {
     }
 
     private void generateAndAddRandomPiece() {
-        PieceType nextType = gameViewModel.getNextPiece();
+        PieceType nextType = gameViewModel.getJigsaw().getCurrentPieceType();
         if (nextType == null) return;
 
         // Create the piece view
@@ -389,13 +419,18 @@ public class GameFragment extends Fragment {
                             removePieceFromGame(v);
                             discardZone.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.discard_default));
                             //logical update
-                            jigsawGame.performAction(jigsawGame.getRows() * jigsawGame.getCols(), null);
+                            jigsawGame.performAction((byte)(jigsawGame.getRows() * jigsawGame.getCols()));
                             //update moves counter
                             updateMovesCounter();
-                            gameViewModel.generateAndAddRandomPiece();
-
                             // Update next piece preview
                             generateAndAddRandomPiece();
+
+                            //reset hintGhost
+                            if (hintGhostView != null) {
+                                hintGhostView.setVisibility(View.GONE);
+                                gameContainer.removeView(hintGhostView);
+                                hintGhostView = null;
+                            }
                         }
                         //SNAP TO GRID
                         else{
@@ -405,12 +440,25 @@ public class GameFragment extends Fragment {
 
                                 snapViewToActionIndex(snapIndex, v);
                                 ghostView.setVisibility(View.GONE);
+
                                 matchedPiece = getPieceFromView(pieceView);
-                                jigsawGame.performAction(snapIndex, matchedPiece);
+                                if(matchedPiece != null){
+                                    matchedPiece.setPlaced(true);
+                                    matchedPiece.setActionSpot(snapIndex);
+                                }
+
+                                //logical update
+                                jigsawGame.performAction(snapIndex.byteValue());
 
                                 //update moves counter
                                 updateMovesCounter();
-                                gameViewModel.generateAndAddRandomPiece();
+
+                                //reset hintGhost
+                                if (hintGhostView != null) {
+                                    hintGhostView.setVisibility(View.GONE);
+                                    gameContainer.removeView(hintGhostView);
+                                    hintGhostView = null;
+                                }
 
                                 //check for win
                                 if(jigsawGame.hasFinished()){
@@ -584,7 +632,6 @@ public class GameFragment extends Fragment {
         initializeGameUI();
         updateMovesCounter();
 
-        gameViewModel.generateAndAddRandomPiece();;
         generateAndAddRandomPiece();
 
         //gameViewModel.isHoldingPiece = false;
@@ -602,10 +649,96 @@ public class GameFragment extends Fragment {
             // Default gray
         }
     }
+    private void showHint(int hintAction) {
+        if (hintAction < 0 || hintAction > jigsawGame.getRows() * jigsawGame.getCols()) return;
+
+        if (hintGhostView == null) {
+            hintGhostView = new ImageView(requireContext());
+            hintGhostView.setAdjustViewBounds(true);
+            hintGhostView.setScaleType(ImageView.ScaleType.FIT_XY);
+            hintGhostView.setAlpha(0.2f);
+            hintGhostView.setEnabled(false);
+            hintGhostView.setClickable(false);
+        }
+
+        ImageView previewView = findPreviewView();
+        if (previewView == null) {
+            throw new IllegalStateException("Preview view not found. Cannot display hint ghost.");
+        }
+
+        hintGhostView.setImageDrawable(previewView.getDrawable());
+
+        int width = previewView.getWidth();
+        int height = previewView.getHeight();
+        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(width, height);
+        hintGhostView.setLayoutParams(params);
+
+        if (hintGhostView.getParent() == null) {
+            gameContainer.addView(hintGhostView);
+        }
+
+        hintGhostView.setVisibility(View.VISIBLE);
+
+        if (hintAction == jigsawGame.getRows() * jigsawGame.getCols()) {
+            int zoneX = (int) discardZone.getX();
+            int zoneY = (int) discardZone.getY();
+            int zoneWidth = discardZone.getWidth();
+            int zoneHeight = discardZone.getHeight();
+
+            int ghostWidth = hintGhostView.getWidth();
+            int ghostHeight = hintGhostView.getHeight();
+
+            float ghostX = zoneX + (zoneWidth - ghostWidth) / 2f;
+            float ghostY = zoneY + (zoneHeight - ghostHeight) / 2f;
+
+            hintGhostView.setX(ghostX);
+            hintGhostView.setY(ghostY);
+        } else {
+            snapViewToActionIndex(hintAction, hintGhostView);
+        }
+
+        // Animate ghost
+        AnimatorSet scaleSet = new AnimatorSet();
+        ObjectAnimator scaleUpX = ObjectAnimator.ofFloat(hintGhostView, View.SCALE_X, 1.0f, 1.15f);
+        ObjectAnimator scaleUpY = ObjectAnimator.ofFloat(hintGhostView, View.SCALE_Y, 1.0f, 1.15f);
+        ObjectAnimator scaleDownX = ObjectAnimator.ofFloat(hintGhostView, View.SCALE_X, 1.15f, 1.0f);
+        ObjectAnimator scaleDownY = ObjectAnimator.ofFloat(hintGhostView, View.SCALE_Y, 1.15f, 1.0f);
+
+        scaleSet.playTogether(scaleUpX, scaleUpY);
+        scaleSet.setDuration(150);
+
+        AnimatorSet scaleBackSet = new AnimatorSet();
+        scaleBackSet.playTogether(scaleDownX, scaleDownY);
+        scaleBackSet.setDuration(150);
+
+        AnimatorSet fullAnim = new AnimatorSet();
+        fullAnim.playSequentially(scaleSet, scaleBackSet);
+        fullAnim.start();
+    }
+
+
+    private ImageView findPreviewView(){
+        for (Piece piece : gamePieces) {
+            ImageView pieceView = piece.getImageView();
+            if (pieceView != null && !piece.isPlaced()) {
+                return pieceView;
+            }
+    }
+        return null;
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        //reset GhostView
         ghostView = null;
+        //reset hintGhost
+        if (hintGhostView != null) {
+            hintGhostView.setVisibility(View.GONE);
+            gameContainer.removeView(hintGhostView);
+            hintGhostView = null;
+        }
+
         if (boardContainer != null) {
             boardContainer.removeAllViews();
         }
