@@ -50,10 +50,10 @@
         android:id="@+id/labelBoardRows"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
         android:text="Board Rows"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/divider1" />
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
 
     <com.google.android.material.slider.Slider
@@ -105,15 +105,92 @@
         app:layout_constraintTop_toBottomOf="@id/colsSlider"
         tools:text="6 Columns" />
 
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintTop_toBottomOf="@id/colsValueText" />
+
+    <!-- Preview Queue Size -->
+    <TextView
+        android:id="@+id/labelPreviewQueue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Preview Queue Size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/colsValueText" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/previewQueueSlider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:valueFrom="0"
+        android:valueTo="10"
+        android:stepSize="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelPreviewQueue" />
+
+    <TextView
+        android:id="@+id/previewQueueValueText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/previewQueueSlider"
+        app:layout_constraintTop_toBottomOf="@id/previewQueueSlider"
+        tools:text="3 pieces" />
+
+    <TextView
+        android:id="@+id/labelHintTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hint time refresh (will affect the quality of the hint)"
+        app:layout_constraintTop_toBottomOf="@+id/previewQueueValueText"
+        tools:layout_editor_absoluteX="16dp" />
+
     <!-- Standard Button -->
+    <com.google.android.material.slider.Slider
+        android:id="@+id/hintTimeSlider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stepSize="1"
+        android:value="5"
+        android:valueFrom="1"
+        android:valueTo="30"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelHintTime" />
+
+    <TextView
+        android:id="@+id/hintTimeValueText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="5 seconds"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hintTimeSlider" />
+
     <Button
         android:id="@+id/standardButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="28dp"
         android:text="Standard (4x6)"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/colsValueText" />
+        app:layout_constraintTop_toBottomOf="@+id/hintTimeSlider" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Changing the board size will reset the game!"
+        android:textColor="#ED2F2F"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -85,6 +85,9 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
     public int getFigureIndex() {
         return figureIndex;
     }
+    public PieceQueue getPieceQueue() {
+        return pieceQueue;
+    }
 
     public void setFigureIndex(int figureIndex) {
         if (figureIndex < 0 || figureIndex >= TOTAL_FIGURES) {
@@ -270,7 +273,34 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
 
     @Override
     public int eval() {
-        return hasFinished() ? 1 : 0;
+        int totalCells = rows * cols;
+        int filledCells = Long.bitCount(board);
+
+        // Board fill progress (0–100)
+        int fillScore = (int) ((filledCells / (float) totalCells) * 100);
+
+        // Piece usage penalty — scaled to board size
+        // Use relative scaling for different board sizes
+        int expectedMaxPieces = totalCells / 3; // avg piece covers ~3 cells
+        int penalty = (int) (((float) quantity / expectedMaxPieces) * 50); // up to 50 penalty
+
+        // Lookahead bonus: how many legal placements for next piece
+//        int lookaheadBonus = 0;
+//        if (!pieceQueue.isEmpty()) {
+//            PieceType nextPiece = pieceQueue.peek();
+//            int legalPlacements = 0;
+//
+//            for (byte i = 0; i < skipActionValue; i++) {
+//                if (isLegal(i, nextPiece)) {
+//                    legalPlacements++;
+//                }
+//            }
+//
+//            // Scale bonus: if many placements, this is a flexible state
+//            lookaheadBonus = Math.min(legalPlacements * 2, 20); // cap to +20
+//        }
+
+        return Math.max(fillScore - penalty, 0);//+lookaheadBonus
     }
 
     @Override

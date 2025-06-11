@@ -20,7 +20,11 @@ public class SettingsFragment extends Fragment {
     private SharedViewModel sharedViewModel;
     private Slider scaleSlider, rowsSlider, colsSlider;
     private TextView scaleValueText, rowsValueText, colsValueText;
+    private Slider previewQueueSlider;
+    private TextView previewQueueValueText;
     private Button standardButton;
+    private Slider hintTimeSlider;
+    private TextView hintTimeValueText;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,6 +44,10 @@ public class SettingsFragment extends Fragment {
         rowsValueText = view.findViewById(R.id.rowsValueText);
         colsValueText = view.findViewById(R.id.colsValueText);
         standardButton = view.findViewById(R.id.standardButton);
+        previewQueueSlider = view.findViewById(R.id.previewQueueSlider);
+        previewQueueValueText = view.findViewById(R.id.previewQueueValueText);
+        hintTimeSlider = view.findViewById(R.id.hintTimeSlider);
+        hintTimeValueText = view.findViewById(R.id.hintTimeValueText);
 
         return view;
     }
@@ -68,6 +76,7 @@ public class SettingsFragment extends Fragment {
 
         // --- Rows Slider ---
         sharedViewModel.getBoardRows().observe(getViewLifecycleOwner(), rows -> {
+
             if (rows != null) {
                 if ((int) rowsSlider.getValue() != rows) { // Avoid feedback loop
                     rowsSlider.setValue(rows.floatValue());
@@ -95,6 +104,38 @@ public class SettingsFragment extends Fragment {
                 sharedViewModel.setBoardCols((int) value);
             }
         });
+        // --- Preview Queue Size ---
+        sharedViewModel.getPreviewQueueSize().observe(getViewLifecycleOwner(), size -> {
+            if (size != null) {
+                if ((int) previewQueueSlider.getValue() != size) {
+                    previewQueueSlider.setValue(size);
+                }
+                previewQueueValueText.setText(String.format(Locale.US, "%d pieces", size));
+            }
+        });
+        previewQueueSlider.addOnChangeListener((slider, value, fromUser) -> {
+            if (fromUser) {
+                sharedViewModel.setPreviewQueueSize((int) value);
+            }
+        });
+
+
+        sharedViewModel.getHintTimeSeconds().observe(getViewLifecycleOwner(), time -> {
+            if (time != null) {
+                if ((int) hintTimeSlider.getValue() != time) {
+                    hintTimeSlider.setValue(time);
+                }
+                hintTimeValueText.setText(String.format(Locale.US, "%d seconds", time));
+            }
+        });
+
+        hintTimeSlider.addOnChangeListener((slider, value, fromUser) -> {
+            if (fromUser) {
+                sharedViewModel.setHintTimeSeconds((int) value);
+            }
+            hintTimeValueText.setText(String.format(Locale.US, "%d seconds", (int) value));
+        });
+
 
         // --- Standard Button ---
         standardButton.setOnClickListener(v -> {

@@ -12,6 +12,10 @@ public class Tree {
     private final List<Node> nodes;
     private final Jigsaw rootState;
     private final int rootIndex;
+    private volatile boolean shouldCancel = false;
+    public void cancel() {
+        shouldCancel = true;
+    }
 
     public Tree(Jigsaw initialState, Config config) {
         this.config = config;
@@ -21,7 +25,22 @@ public class Tree {
     }
 
     public byte findBestAction() {
+        long startTime = System.nanoTime();
+
         for (int iter = 0; iter < config.maxIters; iter++) {
+
+            //CANCELLATION FROM OUTSIDE THREAD(HINT OVERLAPPING)
+            if (shouldCancel) {
+                System.out.println("MCTS cancelled.");
+                return -1;
+            }
+
+            //time limit
+            long elapsedMillis = (System.nanoTime() - startTime) / 1_000_000;
+            if (elapsedMillis > config.maxMillis) {
+                System.out.println("MCTS time limit reached.");
+                break;
+            }
             if(iter % 1000 == 0) System.out.println("Iteration: " + iter);
 
             Jigsaw state = rootState.cloneState();

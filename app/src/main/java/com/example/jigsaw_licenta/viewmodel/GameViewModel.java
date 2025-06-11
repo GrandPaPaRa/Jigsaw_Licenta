@@ -16,15 +16,10 @@ import java.util.Random;
 
 public class GameViewModel extends ViewModel {
     public boolean isHoldingPiece = false;
-    private final Random random = new Random();
     private Jigsaw jigsaw;
     private final List<Piece> pieceList = new ArrayList<>();
     private float currentScale = 1.0f;
     public GameViewModel() {
-    }
-    private PieceType generateRandomPiece() {
-        // Your logic to generate a random piece
-        return PieceType.getRandomPieceType(); // For example
     }
     public Jigsaw getJigsaw() {
         return jigsaw;
@@ -56,5 +51,10 @@ public class GameViewModel extends ViewModel {
     }
     public void removePiece(Piece piece) {
         pieceList.remove(piece);
+    }
+    public void resetGame(int rows, int cols) {
+
+        jigsaw = new Jigsaw(rows, cols);
+        clearPieces();
     }
 }

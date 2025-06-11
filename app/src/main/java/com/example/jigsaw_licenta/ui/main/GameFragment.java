@@ -17,6 +17,7 @@ import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,13 +29,14 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.jigsaw_licenta.R;
 // Import your Jigsaw class
-import com.example.jigsaw_licenta.model.Jigsaw; // Assuming this is the correct path
-import com.example.jigsaw_licenta.model.Piece; // Your Piece model (that holds ImageView)
-import com.example.jigsaw_licenta.model.PieceType; // Your PieceType enum
+import com.example.jigsaw_licenta.model.Jigsaw;
+import com.example.jigsaw_licenta.model.Piece;
+import com.example.jigsaw_licenta.model.PieceType;
 import com.example.jigsaw_licenta.model.Tree;
 import com.example.jigsaw_licenta.utils.Config;
 import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.example.jigsaw_licenta.viewmodel.SharedViewModel;
+import com.example.jigsaw_licenta.viewmodel.SharedViewModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +51,6 @@ public class GameFragment extends Fragment {
     //just for reference to set the PiecePreview not the actual view
     private ImageView nextPiecePreview;
     private List<PieceType> upcomingPieceList = new ArrayList<>();
-    private static final int PREVIEW_SIZE = 5;
     private ImageView hintButton;
     private TextView movesTextView;
     private Button resetGameButton;
@@ -60,7 +61,8 @@ public class GameFragment extends Fragment {
     private Jigsaw jigsawGame;
     private int baseTileSize;
     private float snapThreshold ;
-    private byte hintAction = -1;
+    private Tree currentTree = null;
+    private Byte cachedHintAction = null;
 
     public GameFragment() {
     }
@@ -69,9 +71,10 @@ public class GameFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         baseTileSize = ContextCompat.getDrawable(requireContext(), R.drawable.board_tile).getIntrinsicHeight();
-        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        gameViewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
 
+        gameViewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
+        SharedViewModelFactory factory = new SharedViewModelFactory(requireActivity().getApplication(), gameViewModel);
+        sharedViewModel = new ViewModelProvider(requireActivity(),factory).get(SharedViewModel.class);
     }
 
     @Override
@@ -107,23 +110,20 @@ public class GameFragment extends Fragment {
         initializeGameUI();
 
         //Initialize game Queue Preview
+        upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(sharedViewModel.getPreviewQueueSize().getValue() + 1));
+        upcomingPieceList.remove(0); //so it wont the current preview in the list
+        updateUpcomingPiecePreviewUI();
 
+        //initialize hint computation
+        startHintComputation(jigsawGame);
 
         resetGameButton.setOnClickListener(v -> resetGame());
 
         hintButton.setOnClickListener(v -> {
-            new Thread(() -> {
-                long startTime = System.nanoTime();
-
-                Tree tree = new Tree(jigsawGame, new Config());
-                int computedHintAction = tree.findBestAction();
-
-                long endTime = System.nanoTime();
-                double durationMs = (endTime - startTime) / 1_000_000.0;
-                System.out.printf("MCTS took %.2f ms%n", durationMs);
-
-                requireActivity().runOnUiThread(() -> showHint(computedHintAction));
-            }).start();
+            if (cachedHintAction != null && hintButton.isEnabled()) {
+                showHint(cachedHintAction);
+                hintButton.setEnabled(false);
+            }
         });
     }
 
@@ -422,8 +422,6 @@ public class GameFragment extends Fragment {
                             jigsawGame.performAction((byte)(jigsawGame.getRows() * jigsawGame.getCols()));
                             //update moves counter
                             updateMovesCounter();
-                            // Update next piece preview
-                            generateAndAddRandomPiece();
 
                             //reset hintGhost
                             if (hintGhostView != null) {
@@ -431,6 +429,17 @@ public class GameFragment extends Fragment {
                                 gameContainer.removeView(hintGhostView);
                                 hintGhostView = null;
                             }
+
+                            //Preview update
+                            upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(sharedViewModel.getPreviewQueueSize().getValue() + 1));
+                            upcomingPieceList.remove(0);
+                            updateUpcomingPiecePreviewUI();
+
+                            // Update next piece preview
+                            generateAndAddRandomPiece();
+
+                            //Generate new Hint
+                            startHintComputation(jigsawGame);
                         }
                         //SNAP TO GRID
                         else{
@@ -460,14 +469,25 @@ public class GameFragment extends Fragment {
                                     hintGhostView = null;
                                 }
 
-                                //check for win
+                                //Preview update
+                                upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(sharedViewModel.getPreviewQueueSize().getValue() + 1));
+                                upcomingPieceList.remove(0);
+                                updateUpcomingPiecePreviewUI();
+
+
+
+                                //*** CHECK FOR WIN ***
                                 if(jigsawGame.hasFinished()){
                                     showGameOverDialog();
                                     //resetGame();
                                     return true;
                                 }
+
                                 // Update next piece preview
                                 generateAndAddRandomPiece();
+
+                                //Generate new Hint
+                                startHintComputation(jigsawGame);
 
                             }else{
                                 v.setX(originalX);
@@ -625,8 +645,14 @@ public class GameFragment extends Fragment {
         gameViewModel.clearPieces();
 
         // Reset Jigsaw game
-        jigsawGame = new Jigsaw(jigsawGame.getRows(), jigsawGame.getCols());
-        gameViewModel.setJigsaw(jigsawGame);
+        gameViewModel.resetGame(sharedViewModel.getBoardRows().getValue(), sharedViewModel.getBoardCols().getValue());
+
+        //Generate new Hint
+        startHintComputation(jigsawGame);
+
+        upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(sharedViewModel.getPreviewQueueSize().getValue() + 1));
+        upcomingPieceList.remove(0); //so it wont the current preview in the list
+        updateUpcomingPiecePreviewUI();
 
         // Re-render
         initializeGameUI();
@@ -715,8 +741,6 @@ public class GameFragment extends Fragment {
         fullAnim.playSequentially(scaleSet, scaleBackSet);
         fullAnim.start();
     }
-
-
     private ImageView findPreviewView(){
         for (Piece piece : gamePieces) {
             ImageView pieceView = piece.getImageView();
@@ -725,6 +749,48 @@ public class GameFragment extends Fragment {
             }
     }
         return null;
+    }
+    private void updateUpcomingPiecePreviewUI() {
+        LinearLayout previewContainer = requireView().findViewById(R.id.piecePreviewContainer);
+        previewContainer.removeAllViews();
+
+        for (PieceType pieceType : upcomingPieceList) {
+            ImageView preview = new ImageView(requireContext());
+            preview.setLayoutParams(new LinearLayout.LayoutParams(100, 100));
+            preview.setImageResource(getDrawableResourceForPieceType(pieceType));
+            preview.setPadding(8, 0, 8, 0);
+            previewContainer.addView(preview);
+        }
+    }
+
+    private void startHintComputation(Jigsaw jigsawGame) {
+        // Cancel previous MCTS
+        if (currentTree != null) {
+            currentTree.cancel();
+        }
+
+        cachedHintAction = null;
+        hintButton.setEnabled(false);
+
+        Thread mctsThread = new Thread(() -> {
+            long startTime = System.nanoTime();
+
+            Tree tree = new Tree(jigsawGame, new Config(100000,10,(float) Math.sqrt(2.0),sharedViewModel.getHintTimeSeconds().getValue() * 1000));
+            currentTree = tree; //(float) Math.sqrt(2.0)
+
+            byte bestAction = tree.findBestAction();
+
+            if (bestAction != -1) {
+                cachedHintAction = bestAction;
+                requireActivity().runOnUiThread(() -> hintButton.setEnabled(true));
+            }
+
+            long endTime = System.nanoTime();
+            double durationMs = (endTime - startTime) / 1_000_000.0;
+            System.out.printf("MCTS took %.2f ms%n", durationMs);
+        });
+
+        mctsThread.start();
     }
 
     @Override

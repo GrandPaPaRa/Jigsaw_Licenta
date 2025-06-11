@@ -77,13 +77,32 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginTop="30dp"
-        android:background="@drawable/rounded_gray_background"
+        android:background="@drawable/hint_button_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/movesTextView"
         app:layout_constraintTop_toBottomOf="@+id/boardContainer"
         app:srcCompat="@drawable/light_bulb_50"
         app:tint="#FFD700" />
+
+    <HorizontalScrollView
+        android:id="@+id/previewScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nextPiecePreview">
+
+        <LinearLayout
+            android:id="@+id/piecePreviewContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp" />
+    </HorizontalScrollView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
