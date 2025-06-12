@@ -1,5 +1,7 @@
 package com.example.jigsaw_licenta.ui.main;
 
+import static com.example.jigsaw_licenta.model.Jigsaw.MAX_ITERATIONS;
+
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
@@ -7,7 +9,6 @@ import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -32,19 +33,23 @@ import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.model.Jigsaw;
 import com.example.jigsaw_licenta.model.Piece;
 import com.example.jigsaw_licenta.model.PieceType;
+import com.example.jigsaw_licenta.model.StopType;
 import com.example.jigsaw_licenta.model.Tree;
 import com.example.jigsaw_licenta.utils.Config;
+import com.example.jigsaw_licenta.viewmodel.AiSettingsModelFactory;
+import com.example.jigsaw_licenta.viewmodel.AiSettingsViewModel;
 import com.example.jigsaw_licenta.viewmodel.GameViewModel;
-import com.example.jigsaw_licenta.viewmodel.SharedViewModel;
-import com.example.jigsaw_licenta.viewmodel.SharedViewModelFactory;
+import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
+import com.example.jigsaw_licenta.viewmodel.GameSettingsModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameFragment extends Fragment {
 
-    private SharedViewModel sharedViewModel;
+    private GameSettingsViewModel gameSettingsViewModel;
     private GameViewModel gameViewModel;
+    private AiSettingsViewModel aiSettingsViewModel;
     private GridLayout boardContainer;
     private ImageView ghostView;
     private ImageView hintGhostView;
@@ -73,8 +78,11 @@ public class GameFragment extends Fragment {
         baseTileSize = ContextCompat.getDrawable(requireContext(), R.drawable.board_tile).getIntrinsicHeight();
 
         gameViewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
-        SharedViewModelFactory factory = new SharedViewModelFactory(requireActivity().getApplication(), gameViewModel);
-        sharedViewModel = new ViewModelProvider(requireActivity(),factory).get(SharedViewModel.class);
+        GameSettingsModelFactory factory = new GameSettingsModelFactory(requireActivity().getApplication(), gameViewModel);
+        gameSettingsViewModel = new ViewModelProvider(requireActivity(),factory).get(GameSettingsViewModel.class);
+
+        AiSettingsModelFactory aiFactory = new AiSettingsModelFactory(requireActivity().getApplication(), gameSettingsViewModel);
+        aiSettingsViewModel = new ViewModelProvider(requireActivity(), aiFactory).get(AiSettingsViewModel.class);
     }
 
     @Override
@@ -110,7 +118,7 @@ public class GameFragment extends Fragment {
         initializeGameUI();
 
         //Initialize game Queue Preview
-        upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(sharedViewModel.getPreviewQueueSize().getValue() + 1));
+        upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(gameSettingsViewModel.getPreviewQueueSize().getValue() + 1));
         upcomingPieceList.remove(0); //so it wont the current preview in the list
         updateUpcomingPiecePreviewUI();
 
@@ -133,8 +141,8 @@ public class GameFragment extends Fragment {
         hintGhostView = null;
 
         // Fetch rows and cols
-        Integer savedRows = sharedViewModel.getBoardRows().getValue();
-        Integer savedCols = sharedViewModel.getBoardCols().getValue();
+        Integer savedRows = gameSettingsViewModel.getBoardRows().getValue();
+        Integer savedCols = gameSettingsViewModel.getBoardCols().getValue();
 
         int rowsToUse = (savedRows != null && savedRows > 0) ? savedRows : Jigsaw.DEFAULT_ROWS;
         int colsToUse = (savedCols != null && savedCols > 0) ? savedCols : Jigsaw.DEFAULT_COLS;
@@ -149,7 +157,7 @@ public class GameFragment extends Fragment {
         }
 
         // Fetch initial scale
-        Float initialScale = sharedViewModel.getImageScale().getValue();
+        Float initialScale = gameSettingsViewModel.getImageScale().getValue();
         if (initialScale != null) {
             currentScale = initialScale;
         }
@@ -431,7 +439,7 @@ public class GameFragment extends Fragment {
                             }
 
                             //Preview update
-                            upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(sharedViewModel.getPreviewQueueSize().getValue() + 1));
+                            upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(gameSettingsViewModel.getPreviewQueueSize().getValue() + 1));
                             upcomingPieceList.remove(0);
                             updateUpcomingPiecePreviewUI();
 
@@ -470,7 +478,7 @@ public class GameFragment extends Fragment {
                                 }
 
                                 //Preview update
-                                upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(sharedViewModel.getPreviewQueueSize().getValue() + 1));
+                                upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(gameSettingsViewModel.getPreviewQueueSize().getValue() + 1));
                                 upcomingPieceList.remove(0);
                                 updateUpcomingPiecePreviewUI();
 
@@ -645,12 +653,12 @@ public class GameFragment extends Fragment {
         gameViewModel.clearPieces();
 
         // Reset Jigsaw game
-        gameViewModel.resetGame(sharedViewModel.getBoardRows().getValue(), sharedViewModel.getBoardCols().getValue());
+        gameViewModel.resetGame(gameSettingsViewModel.getBoardRows().getValue(), gameSettingsViewModel.getBoardCols().getValue());
 
         //Generate new Hint
         startHintComputation(jigsawGame);
 
-        upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(sharedViewModel.getPreviewQueueSize().getValue() + 1));
+        upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(gameSettingsViewModel.getPreviewQueueSize().getValue() + 1));
         upcomingPieceList.remove(0); //so it wont the current preview in the list
         updateUpcomingPiecePreviewUI();
 
@@ -775,10 +783,20 @@ public class GameFragment extends Fragment {
         Thread mctsThread = new Thread(() -> {
             long startTime = System.nanoTime();
 
-            Tree tree = new Tree(jigsawGame, new Config(100000,10,(float) Math.sqrt(2.0),sharedViewModel.getHintTimeSeconds().getValue() * 1000));
-            currentTree = tree; //(float) Math.sqrt(2.0)
+            float depthCoefficient = aiSettingsViewModel.getDepthCoefficient().getValue();
+            float c = aiSettingsViewModel.getExplorationFactor().getValue();
+            float explorationRateSimulation = aiSettingsViewModel.getSimulationExplorationFactor().getValue();
+            Tree tree = new Tree(jigsawGame,
+                    new Config(MAX_ITERATIONS,
+                    (int)(depthCoefficient * Math.sqrt(jigsawGame.getRows() * jigsawGame.getCols())),
+                    c,
+                    explorationRateSimulation,
+                    gameSettingsViewModel.getHintTimeSeconds().getValue() * 1000
+                    ),
+                    StopType.TIME);
+            currentTree = tree;
 
-            byte bestAction = tree.findBestAction();
+            byte bestAction = tree.findBestActionbyTime();
 
             if (bestAction != -1) {
                 cachedHintAction = bestAction;

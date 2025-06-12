@@ -5,19 +5,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
 import com.example.jigsaw_licenta.R;
-import com.example.jigsaw_licenta.viewmodel.SharedViewModel;
+import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
 import com.google.android.material.slider.Slider;
 import java.util.Locale;
 
 public class SettingsFragment extends Fragment {
 
-    private SharedViewModel sharedViewModel;
+    private GameSettingsViewModel gameSettingsViewModel;
     private Slider scaleSlider, rowsSlider, colsSlider;
     private TextView scaleValueText, rowsValueText, colsValueText;
     private Slider previewQueueSlider;
@@ -29,7 +33,7 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        gameSettingsViewModel = new ViewModelProvider(requireActivity()).get(GameSettingsViewModel.class);
     }
 
     @Nullable
@@ -56,11 +60,17 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupObserversAndListeners();
+
+        ImageView aiSettingsButton = view.findViewById(R.id.aiSettingsButton);
+        aiSettingsButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.action_settingsFragment_to_aiSettingsFragment);
+        });
     }
 
     private void setupObserversAndListeners() {
         // --- Scale Slider ---
-        sharedViewModel.getImageScale().observe(getViewLifecycleOwner(), scale -> {
+        gameSettingsViewModel.getImageScale().observe(getViewLifecycleOwner(), scale -> {
             if (scale != null) {
                 if (scaleSlider.getValue() != scale) { // Avoid feedback loop
                     scaleSlider.setValue(scale);
@@ -70,12 +80,12 @@ public class SettingsFragment extends Fragment {
         });
         scaleSlider.addOnChangeListener((slider, value, fromUser) -> {
             if (fromUser) {
-                sharedViewModel.setImageScale(value);
+                gameSettingsViewModel.setImageScale(value);
             }
         });
 
         // --- Rows Slider ---
-        sharedViewModel.getBoardRows().observe(getViewLifecycleOwner(), rows -> {
+        gameSettingsViewModel.getBoardRows().observe(getViewLifecycleOwner(), rows -> {
 
             if (rows != null) {
                 if ((int) rowsSlider.getValue() != rows) { // Avoid feedback loop
@@ -86,12 +96,12 @@ public class SettingsFragment extends Fragment {
         });
         rowsSlider.addOnChangeListener((slider, value, fromUser) -> {
             if (fromUser) {
-                sharedViewModel.setBoardRows((int) value);
+                gameSettingsViewModel.setBoardRows((int) value);
             }
         });
 
         // --- Cols Slider ---
-        sharedViewModel.getBoardCols().observe(getViewLifecycleOwner(), cols -> {
+        gameSettingsViewModel.getBoardCols().observe(getViewLifecycleOwner(), cols -> {
             if (cols != null) {
                 if ((int) colsSlider.getValue() != cols) { // Avoid feedback loop
                     colsSlider.setValue(cols.floatValue());
@@ -101,11 +111,11 @@ public class SettingsFragment extends Fragment {
         });
         colsSlider.addOnChangeListener((slider, value, fromUser) -> {
             if (fromUser) {
-                sharedViewModel.setBoardCols((int) value);
+                gameSettingsViewModel.setBoardCols((int) value);
             }
         });
         // --- Preview Queue Size ---
-        sharedViewModel.getPreviewQueueSize().observe(getViewLifecycleOwner(), size -> {
+        gameSettingsViewModel.getPreviewQueueSize().observe(getViewLifecycleOwner(), size -> {
             if (size != null) {
                 if ((int) previewQueueSlider.getValue() != size) {
                     previewQueueSlider.setValue(size);
@@ -115,12 +125,12 @@ public class SettingsFragment extends Fragment {
         });
         previewQueueSlider.addOnChangeListener((slider, value, fromUser) -> {
             if (fromUser) {
-                sharedViewModel.setPreviewQueueSize((int) value);
+                gameSettingsViewModel.setPreviewQueueSize((int) value);
             }
         });
 
 
-        sharedViewModel.getHintTimeSeconds().observe(getViewLifecycleOwner(), time -> {
+        gameSettingsViewModel.getHintTimeSeconds().observe(getViewLifecycleOwner(), time -> {
             if (time != null) {
                 if ((int) hintTimeSlider.getValue() != time) {
                     hintTimeSlider.setValue(time);
@@ -131,7 +141,7 @@ public class SettingsFragment extends Fragment {
 
         hintTimeSlider.addOnChangeListener((slider, value, fromUser) -> {
             if (fromUser) {
-                sharedViewModel.setHintTimeSeconds((int) value);
+                gameSettingsViewModel.setHintTimeSeconds((int) value);
             }
             hintTimeValueText.setText(String.format(Locale.US, "%d seconds", (int) value));
         });
@@ -139,7 +149,7 @@ public class SettingsFragment extends Fragment {
 
         // --- Standard Button ---
         standardButton.setOnClickListener(v -> {
-            sharedViewModel.setStandardBoardDimensions();
+            gameSettingsViewModel.setStandardBoardDimensions();
             // Sliders will update via LiveData observation
         });
     }

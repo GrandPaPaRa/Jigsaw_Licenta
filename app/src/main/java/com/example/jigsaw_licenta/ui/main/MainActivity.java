@@ -4,21 +4,18 @@ import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.jigsaw_licenta.R;
-import com.example.jigsaw_licenta.viewmodel.SharedViewModel;
+import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private SharedViewModel sharedViewModel;
+    private GameSettingsViewModel gameSettingsViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+        gameSettingsViewModel = new ViewModelProvider(this).get(GameSettingsViewModel.class);
 
         // Get the nav controller from the FragmentContainerView
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()

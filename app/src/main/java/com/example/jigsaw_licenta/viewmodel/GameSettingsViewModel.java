@@ -7,9 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.jigsaw_licenta.model.Jigsaw;
-
-public class SharedViewModel extends AndroidViewModel {
+public class GameSettingsViewModel extends AndroidViewModel {
 
     private static final String PREFS_NAME = "GameSettingsPrefs";
     private static final String KEY_IMAGE_SCALE = "imageScale";
@@ -31,7 +29,7 @@ public class SharedViewModel extends AndroidViewModel {
     private final SharedPreferences sharedPreferences;
     private GameViewModel gameViewModel;
 
-    public SharedViewModel(@NonNull Application application, GameViewModel gameViewModel) {
+    public GameSettingsViewModel(@NonNull Application application, GameViewModel gameViewModel) {
         super(application);
         sharedPreferences = application.getSharedPreferences(PREFS_NAME, Application.MODE_PRIVATE);
 
@@ -42,6 +40,9 @@ public class SharedViewModel extends AndroidViewModel {
         hintTimeSeconds.setValue(sharedPreferences.getInt(KEY_HINT_TIME_SECONDS, DEFAULT_HINT_TIME_SECONDS));
         this.gameViewModel = gameViewModel;
 
+    }
+    public GameViewModel getGameViewModel() {
+        return gameViewModel;
     }
 
     // --- Image Scale ---

@@ -8,11 +8,19 @@ public class Config {
     public int maxDepth = 10;
     public float c = (float) Math.sqrt(2.0);
     public int maxMillis = 5000;
-    public Config(int maxIters, int maxDepth, float c, int maxMillis) {
+    public float explorationRateSimulation = 0.2f;
+    public Config(int maxIters, int maxDepth, float c, float explorationRateSimulation, int maxMillis) {
         this.maxIters = maxIters;
         this.maxDepth = maxDepth;
         this.c = c;
         this.maxMillis = maxMillis;
+        this.explorationRateSimulation = explorationRateSimulation;
+    }
+    public Config(int maxIters, int maxDepth, float c, float explorationRateSimulation) {
+        this.maxIters = maxIters;
+        this.maxDepth = maxDepth;
+        this.c = c;
+        this.explorationRateSimulation = explorationRateSimulation;
     }
     public Config() {}
 }

@@ -10,24 +10,90 @@ import java.util.Random;
 public class Tree {
     private final Config config;
     private final List<Node> nodes;
-    private final Jigsaw rootState;
+    private Jigsaw rootState;
     private final int rootIndex;
     private volatile boolean shouldCancel = false;
+    StopType stopType;
     public void cancel() {
         shouldCancel = true;
     }
 
-    public Tree(Jigsaw initialState, Config config) {
+    public Tree(Jigsaw initialState, Config config, StopType stopType) {
         this.config = config;
         this.nodes = new ArrayList<>();
         this.rootState = initialState.cloneState();
         this.rootIndex = createNode();
+        this.stopType = stopType;
+    }
+    public void setJigsaw(Jigsaw jigsaw) {
+        this.rootState = jigsaw.cloneState();
+    }
+    public byte findBestAction(){
+        return stopType == StopType.TIME ? findBestActionbyTime() : findBestActionbyIterations();
+    }
+    public byte findBestActionbyIterations(){
+        for (int iter = 0; iter < config.maxIters; iter++) {
+
+            //CANCELLATION FROM OUTSIDE THREAD(HINT OVERLAPPING)
+            if (shouldCancel) {
+                System.out.println("MCTS cancelled.");
+                return -1;
+            }
+
+            if(iter % 1000 == 0) System.out.println("Iteration: " + iter);
+
+            Jigsaw state = rootState.cloneState();
+            int nodeIndex = rootIndex;
+            int depth = 0;
+
+            // Selection phase
+            while (!state.hasFinished() && depth < config.maxDepth) {
+                Node node = nodes.get(nodeIndex);
+                List<Byte> legalActions = state.legalActions();
+
+                if (node.children.size() < legalActions.size()) {
+                    break; // Not fully expanded
+                }
+
+                byte bestAction = selectBestAction(nodeIndex, state);
+                state.performAction(bestAction);
+                nodeIndex = node.children.get(bestAction);
+                depth++;
+            }
+
+            // Expansion
+            if (!state.hasFinished() && depth < config.maxDepth) {
+                Node node = nodes.get(nodeIndex);
+                List<Byte> legalActions = state.legalActions();
+
+                for (byte action : legalActions) {
+                    if (!node.children.containsKey(action)) {
+                        int childIndex = createNode();
+                        nodes.get(childIndex).setParent(nodeIndex);
+                        node.setChild(action, childIndex);
+
+                        // Simulation
+                        int score = simulate(state.cloneState(), config.maxDepth - depth);
+
+                        // Backpropagation
+                        backpropagate(score, 1, childIndex);
+                        break;
+                    }
+                }
+            } else {
+                // Terminal state or max depth reached
+                int score = state.eval();
+                backpropagate(score, 1, nodeIndex);
+            }
+        }
+
+        return getMostVisitedAction(rootIndex);
     }
 
-    public byte findBestAction() {
+    public byte findBestActionbyTime() {
         long startTime = System.nanoTime();
 
-        for (int iter = 0; iter < config.maxIters; iter++) {
+        while(true) {
 
             //CANCELLATION FROM OUTSIDE THREAD(HINT OVERLAPPING)
             if (shouldCancel) {
@@ -41,7 +107,7 @@ public class Tree {
                 System.out.println("MCTS time limit reached.");
                 break;
             }
-            if(iter % 1000 == 0) System.out.println("Iteration: " + iter);
+            if(elapsedMillis % 1000 == 0) System.out.println("Elapsed time: " + elapsedMillis);
 
             Jigsaw state = rootState.cloneState();
             int nodeIndex = rootIndex;
@@ -116,8 +182,29 @@ public class Tree {
             List<Byte> actions = state.legalActions();
             if (actions.isEmpty()) break;
 
-            byte randomAction = actions.get(random.nextInt(actions.size()));
-            state.performAction(randomAction);
+            byte chosenAction;
+            if (random.nextFloat() < config.explorationRateSimulation) {
+                chosenAction = actions.get(random.nextInt(actions.size()));
+            } else {
+
+                int bestScore = Integer.MIN_VALUE;
+                byte bestAction = actions.get(0); // fallback
+
+                for (byte action : actions) {
+                    Jigsaw copy = state.cloneState();
+                    copy.performAction(action);
+                    int score = copy.eval();
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestAction = action;
+                    }
+                }
+
+                chosenAction = bestAction;
+            }
+
+            state.performAction(chosenAction);
             depth++;
         }
 

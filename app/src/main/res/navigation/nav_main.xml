@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_main"
     app:startDestination="@id/menu_game">
     <fragment
@@ -10,13 +11,25 @@
         <action
             android:id="@+id/action_gameFragment2_to_settingsFragment2"
             app:destination="@id/menu_settings" />
+        <action
+            android:id="@+id/action_menu_game_to_aiSettingsFragment"
+            app:destination="@id/aiSettingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/menu_settings"
         android:name="com.example.jigsaw_licenta.ui.main.SettingsFragment"
         android:label="Settings" >
         <action
-            android:id="@+id/action_settingsFragment2_to_gameFragment2"
+            android:id="@+id/action_settingsFragment_to_aiSettingsFragment"
+            app:destination="@id/aiSettingsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/aiSettingsFragment"
+        android:name="com.example.jigsaw_licenta.ui.main.AiSettingsFragment"
+        android:label="fragment_ai_settings"
+        tools:layout="@layout/fragment_ai_settings" >
+        <action
+            android:id="@+id/action_aiSettingsFragment_to_menu_game"
             app:destination="@id/menu_game" />
     </fragment>
 </navigation>

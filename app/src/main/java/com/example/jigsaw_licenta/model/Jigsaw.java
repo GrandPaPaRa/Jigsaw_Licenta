@@ -9,6 +9,7 @@ import java.util.Random;
 public class Jigsaw implements Environment<Jigsaw, Byte> {
 
     // --- Default values (can be used as fallbacks or for a default constructor) ---
+    public static final int MAX_ITERATIONS = 500000;
     public static final int DEFAULT_ROWS = 4;
     public static final int DEFAULT_COLS = 6;
     public static final int TOTAL_FIGURES = 6; // This remains constant as per your request
@@ -273,34 +274,24 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
 
     @Override
     public int eval() {
-        int totalCells = rows * cols;
-        int filledCells = Long.bitCount(board);
-
-        // Board fill progress (0–100)
-        int fillScore = (int) ((filledCells / (float) totalCells) * 100);
-
-        // Piece usage penalty — scaled to board size
-        // Use relative scaling for different board sizes
-        int expectedMaxPieces = totalCells / 3; // avg piece covers ~3 cells
-        int penalty = (int) (((float) quantity / expectedMaxPieces) * 50); // up to 50 penalty
-
-        // Lookahead bonus: how many legal placements for next piece
-//        int lookaheadBonus = 0;
-//        if (!pieceQueue.isEmpty()) {
-//            PieceType nextPiece = pieceQueue.peek();
-//            int legalPlacements = 0;
+//        int totalCells = rows * cols;
+//        int filledCells = Long.bitCount(board);
 //
-//            for (byte i = 0; i < skipActionValue; i++) {
-//                if (isLegal(i, nextPiece)) {
-//                    legalPlacements++;
-//                }
-//            }
+//        // Board fill progress (0–100)
+//        int fillScore = (int) ((filledCells / (float) totalCells));
 //
-//            // Scale bonus: if many placements, this is a flexible state
-//            lookaheadBonus = Math.min(legalPlacements * 2, 20); // cap to +20
+//        int expectedMaxPieces = totalCells / 3;
+//        int penalty = (int) (((float) quantity / expectedMaxPieces)); // up to 50 penalty
+//
+//        int score = Math.max(fillScore - penalty, 0);
+//
+//
+//        if (hasFinished()) {
+//            score += 1;
 //        }
-
-        return Math.max(fillScore - penalty, 0);//+lookaheadBonus
+//
+//        return score;
+        return hasFinished()? 1 : 0;
     }
 
     @Override
