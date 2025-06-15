@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Piece & Board Scale -->
+        <TextView
+            android:id="@+id/labelScaleTimeTrial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Piece &amp; Board Scale"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderScaleTimeTrial"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:stepSize="0.1"
+            android:valueFrom="0.5"
+            android:valueTo="2.0"
+            app:layout_constraintTop_toBottomOf="@id/labelScaleTimeTrial"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/textScaleTimeTrial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="1.0x"
+            app:layout_constraintTop_toBottomOf="@id/sliderScaleTimeTrial"
+            app:layout_constraintEnd_toEndOf="@id/sliderScaleTimeTrial" />
+
+        <!-- Board Rows -->
+        <TextView
+            android:id="@+id/labelRowsTimeTrial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Board Rows"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewWarningBoard" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderRowsTimeTrial"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:stepSize="2"
+            android:valueFrom="4"
+            android:valueTo="6"
+            app:layout_constraintTop_toBottomOf="@id/labelRowsTimeTrial"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/textRowsTimeTrial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="4 Rows"
+            app:layout_constraintTop_toBottomOf="@id/sliderRowsTimeTrial"
+            app:layout_constraintEnd_toEndOf="@id/sliderRowsTimeTrial" />
+
+        <!-- Board Columns -->
+        <TextView
+            android:id="@+id/labelColsTimeTrial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Board Columns"
+            app:layout_constraintTop_toBottomOf="@id/textRowsTimeTrial"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderColsTimeTrial"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:stepSize="2"
+            android:valueFrom="6"
+            android:valueTo="10"
+            app:layout_constraintTop_toBottomOf="@id/labelColsTimeTrial"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/textColsTimeTrial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="6 Columns"
+            app:layout_constraintTop_toBottomOf="@id/sliderColsTimeTrial"
+            app:layout_constraintEnd_toEndOf="@id/sliderColsTimeTrial" />
+
+        <!-- Time Trial Dropdown -->
+        <TextView
+            android:id="@+id/labelTimeTrial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Time Trial Duration"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewWarningTimer" />
+
+        <Spinner
+            android:id="@+id/spinnerTimeTrial"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            app:layout_constraintTop_toBottomOf="@id/labelTimeTrial"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/textViewWarningBoard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Changing the board size will reset the game and timer!"
+            android:textColor="#ED2F2F"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textScaleTimeTrial" />
+
+        <TextView
+            android:id="@+id/textViewWarningTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Changing the timer duration will reset the game and timer!"
+            android:textColor="#ED2F2F"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.534"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textColsTimeTrial" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

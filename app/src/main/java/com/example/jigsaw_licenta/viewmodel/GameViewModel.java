@@ -1,25 +1,26 @@
 package com.example.jigsaw_licenta.viewmodel;
 
-import static com.example.jigsaw_licenta.model.PieceType.getRandomPieceType;
+import android.app.Application;
 
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.jigsaw_licenta.model.Jigsaw;
 import com.example.jigsaw_licenta.model.Piece;
-import com.example.jigsaw_licenta.model.PieceType;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Random;
 
-public class GameViewModel extends ViewModel {
+import java.util.List;
+
+
+public class GameViewModel extends AndroidViewModel {
     public boolean isHoldingPiece = false;
-    private Jigsaw jigsaw;
-    private final List<Piece> pieceList = new ArrayList<>();
-    private float currentScale = 1.0f;
-    public GameViewModel() {
+    protected Jigsaw jigsaw;
+    protected final List<Piece> pieceList = new ArrayList<>();
+    protected float currentScale = 1.0f;
+    public GameViewModel(Application application) {
+        super(application);
     }
     public Jigsaw getJigsaw() {
         return jigsaw;
@@ -56,5 +57,26 @@ public class GameViewModel extends ViewModel {
 
         jigsaw = new Jigsaw(rows, cols);
         clearPieces();
+    }
+    public LiveData<Long> getTimeRemaining() {
+        throw new UnsupportedOperationException(
+                "Time trial duration not supported in base GameSettingsViewModel");
+    }
+
+    public LiveData<Boolean> getTimeExpired() {
+        throw new UnsupportedOperationException(
+                "Time trial duration not supported in base GameSettingsViewModel");
+    }
+    public void setTimeExpired(boolean expired){
+        throw new UnsupportedOperationException(
+                "Time trial duration not supported in base GameSettingsViewModel");
+    }
+    public void startTimer(long durationMillis){
+        throw new UnsupportedOperationException(
+                "Time trial duration not supported in base GameSettingsViewModel");
+    }
+    public void resetTimer(){
+        throw new UnsupportedOperationException(
+                "Time trial duration not supported in base GameSettingsViewModel");
     }
 }

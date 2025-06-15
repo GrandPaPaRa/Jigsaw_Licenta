@@ -116,5 +116,8 @@ public class GameSettingsViewModel extends AndroidViewModel {
     public LiveData<Integer> getHintTimeSeconds() {
         return hintTimeSeconds;
     }
-
+    public LiveData<Float> getTimeTrialDuration(){
+        throw new UnsupportedOperationException(
+                "Time trial duration not supported in base GameSettingsViewModel");
+    }
 }

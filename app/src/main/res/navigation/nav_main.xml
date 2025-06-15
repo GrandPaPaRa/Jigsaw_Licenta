@@ -12,8 +12,9 @@
             android:id="@+id/action_gameFragment2_to_settingsFragment2"
             app:destination="@id/menu_settings" />
         <action
-            android:id="@+id/action_menu_game_to_aiSettingsFragment"
-            app:destination="@id/aiSettingsFragment" />
+            android:id="@+id/action_menu_game_to_gameTimeTrialFragment"
+            app:destination="@id/menu_game_time_trial" />
+
     </fragment>
     <fragment
         android:id="@+id/menu_settings"
@@ -22,6 +23,12 @@
         <action
             android:id="@+id/action_settingsFragment_to_aiSettingsFragment"
             app:destination="@id/aiSettingsFragment" />
+        <action
+            android:id="@+id/action_menu_settings_to_menu_game"
+            app:destination="@id/menu_game" />
+        <action
+            android:id="@+id/action_menu_settings_to_gameTimeTrialFragment"
+            app:destination="@id/menu_game_time_trial" />
     </fragment>
     <fragment
         android:id="@+id/aiSettingsFragment"
@@ -31,5 +38,39 @@
         <action
             android:id="@+id/action_aiSettingsFragment_to_menu_game"
             app:destination="@id/menu_game" />
+        <action
+            android:id="@+id/action_aiSettingsFragment_to_menu_settings"
+            app:destination="@id/menu_settings" />
+        <action
+            android:id="@+id/action_aiSettingsFragment_to_gameTimeTrialFragment"
+            app:destination="@id/menu_game_time_trial" />
+    </fragment>
+    <fragment
+        android:id="@+id/menu_game_time_trial"
+        android:name="com.example.jigsaw_licenta.ui.main.GameTimeTrialFragment"
+        android:label="GameTimeTrialFragment" >
+        <action
+            android:id="@+id/action_menu_game_time_trial_to_menu_game"
+            app:destination="@id/menu_game" />
+        <action
+            android:id="@+id/action_menu_game_time_trial_to_gameSettingsTimeTrialFragment"
+            app:destination="@id/gameSettingsTimeTrialFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/gameSettingsTimeTrialFragment"
+        android:name="com.example.jigsaw_licenta.ui.main.GameSettingsTimeTrialFragment"
+        android:label="GameSettingsTimeTrialFragment" >
+        <action
+            android:id="@+id/action_gameSettingsTimeTrialFragment_to_menu_game_time_trial"
+            app:destination="@id/menu_game_time_trial" />
+        <action
+            android:id="@+id/action_gameSettingsTimeTrialFragment_to_menu_game"
+            app:destination="@id/menu_game" />
+        <action
+            android:id="@+id/action_gameSettingsTimeTrialFragment_to_aiSettingsFragment"
+            app:destination="@id/aiSettingsFragment" />
+        <action
+            android:id="@+id/action_gameSettingsTimeTrialFragment_to_menu_settings"
+            app:destination="@id/menu_settings" />
     </fragment>
 </navigation>

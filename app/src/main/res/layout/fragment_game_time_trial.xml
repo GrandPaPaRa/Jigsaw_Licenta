@@ -1,14 +1,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/gameContainer"
+    android:id="@+id/gameContainerTimeTrial"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
     android:clipToPadding="false">
 
     <GridLayout
-        android:id="@+id/boardContainer"
+        android:id="@+id/boardContainerTimeTrial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -21,25 +21,25 @@
         android:padding="0dp"
         android:rowCount="4"
         android:useDefaultMargins="false"
-        app:layout_constraintBottom_toTopOf="@+id/nextPiecePreview"
+        app:layout_constraintBottom_toTopOf="@+id/nextPiecePreviewTimeTrial"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/movesTextView"
+        android:id="@+id/movesTextViewTimeTrial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="100dp"
         android:layout_marginTop="30dp"
         android:text="Moves: 0"
-        app:layout_constraintEnd_toStartOf="@+id/HintButton"
+        app:layout_constraintEnd_toStartOf="@+id/HintButtonTimeTrial"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/boardContainer" />
+        app:layout_constraintTop_toBottomOf="@+id/boardContainerTimeTrial" />
 
     <ImageView
-        android:id="@+id/nextPiecePreview"
+        android:id="@+id/nextPiecePreviewTimeTrial"
         android:layout_width="2dp"
         android:layout_height="0dp"
         android:layout_marginBottom="240dp"
@@ -49,54 +49,54 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/resetGameButton"
+        android:id="@+id/resetGameButtonTimeTrial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Reset Game"
-        app:layout_constraintBottom_toTopOf="@+id/nextPiecePreview"
+        app:layout_constraintBottom_toTopOf="@+id/nextPiecePreviewTimeTrial"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/movesTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/movesTextViewTimeTrial" />
 
     <ImageView
-        android:id="@+id/discardZone"
+        android:id="@+id/discardZoneTimeTrial"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="30dp"
         android:layout_weight="2"
         android:background="@color/discard_default"
         android:padding="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/boardContainer"
+        app:layout_constraintBottom_toTopOf="@+id/boardContainerTimeTrial"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settingsButton"
+        app:layout_constraintTop_toBottomOf="@+id/settingsButtonTimeTrial"
         app:srcCompat="@drawable/outline_auto_delete_24" />
 
     <ImageView
-        android:id="@+id/HintButton"
+        android:id="@+id/HintButtonTimeTrial"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginTop="30dp"
         android:background="@drawable/hint_button_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/movesTextView"
-        app:layout_constraintTop_toBottomOf="@+id/boardContainer"
+        app:layout_constraintStart_toEndOf="@+id/movesTextViewTimeTrial"
+        app:layout_constraintTop_toBottomOf="@+id/boardContainerTimeTrial"
         app:srcCompat="@drawable/light_bulb_50"
         app:tint="#FFD700" />
 
     <HorizontalScrollView
-        android:id="@+id/previewScroll"
+        android:id="@+id/previewScrollTimeTrial"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
         android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nextPiecePreview">
+        app:layout_constraintTop_toBottomOf="@+id/nextPiecePreviewTimeTrial">
 
         <LinearLayout
-            android:id="@+id/piecePreviewContainer"
+            android:id="@+id/piecePreviewContainerTimeTrial"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -105,7 +105,7 @@
     </HorizontalScrollView>
 
     <ImageView
-        android:id="@+id/settingsButton"
+        android:id="@+id/settingsButtonTimeTrial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
@@ -117,5 +117,42 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/baseline_settings_24" />
 
+    <LinearLayout
+        android:id="@+id/scoreContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/timerTextView"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/totalScoreTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:text="Total Score: 425" />
+
+        <TextView
+            android:id="@+id/gamesPlayedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:text="Games: 5" />
+    </LinearLayout>
+    <TextView
+        android:id="@+id/timerTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toStartOf="@+id/settingsButtonTimeTrial"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="05:00" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
