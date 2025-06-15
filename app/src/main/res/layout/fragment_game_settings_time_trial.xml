@@ -138,6 +138,29 @@
             app:layout_constraintHorizontal_bias="0.534"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textColsTimeTrial" />
+        <!-- Divider above logout button -->
+
+        <!-- Logout Button -->
+
+        <View
+            android:id="@+id/dividerLogoutTimeTrial"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="36dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintTop_toBottomOf="@+id/spinnerTimeTrial"
+            tools:layout_editor_absoluteX="16dp" />
+
+        <Button
+            android:id="@+id/logoutButtonTimeTrial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:backgroundTint="#F44336"
+            android:text="Logout"
+            android:textColor="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/dividerLogoutTimeTrial"
+            tools:layout_editor_absoluteX="16dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

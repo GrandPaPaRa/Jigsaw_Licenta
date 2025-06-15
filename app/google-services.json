@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "841800030709",
+    "project_id": "licenta-13d10",
+    "storage_bucket": "licenta-13d10.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:841800030709:android:a4198fb51c669d8acbe8bc",
+        "android_client_info": {
+          "package_name": "com.example.jigsaw_licenta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7dNMkPn7ZdMCPsq_tpJIRreMVAGDXoZ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

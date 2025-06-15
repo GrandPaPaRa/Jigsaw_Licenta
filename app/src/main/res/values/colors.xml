@@ -6,4 +6,5 @@
     <color name="discard_hover">#40FFCDD2</color>   <!-- Light red -->
     <color name="gray_translucent">#88AAAAAA</color>
     <color name="gray_bright">#DCDCDC</color>
+    <color name="error_red">#F44336</color>
 </resources>
