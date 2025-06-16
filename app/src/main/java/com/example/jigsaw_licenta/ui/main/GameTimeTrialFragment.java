@@ -16,6 +16,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.jigsaw_licenta.R;
+import com.example.jigsaw_licenta.utils.FirebaseStatsHelper;
 import com.example.jigsaw_licenta.utils.GameInterface;
 import com.example.jigsaw_licenta.viewmodel.AiSettingsModelFactory;
 import com.example.jigsaw_licenta.viewmodel.AiSettingsTimeTrialViewModel;
@@ -136,11 +137,13 @@ public class GameTimeTrialFragment extends BaseGameFragment implements GameInter
 
     }
     protected void onTimeExpired(){
-        //****handle saving the score to the database ******
+        float score = ((GameTimeTrialViewModel)gameViewModel).getTotalScore().getValue();
 
+        //****handle saving the score to the database ******
+        new FirebaseStatsHelper().updateTimeTrialScore(jigsawGame,(int)(gameSettingsViewModel.getTimeTrialDuration().getValue() * 60),score);
 
         //show score and time up dialog
-        float score = ((GameTimeTrialViewModel)gameViewModel).getTotalScore().getValue();
+
         showTimeUpDialog(score);
 
     }

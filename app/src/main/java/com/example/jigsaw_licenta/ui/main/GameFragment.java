@@ -15,6 +15,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.jigsaw_licenta.R;
+import com.example.jigsaw_licenta.utils.FirebaseStatsHelper;
 import com.example.jigsaw_licenta.utils.GameInterface;
 import com.example.jigsaw_licenta.viewmodel.AiSettingsModelFactory;
 import com.example.jigsaw_licenta.viewmodel.AiSettingsViewModel;
@@ -91,6 +92,7 @@ public class GameFragment extends BaseGameFragment implements GameInterface {
     }
     @Override
     protected void onFinishedGame() {
+        new FirebaseStatsHelper().updateCasualGame(jigsawGame);
         showGameOverDialog();
     }
 

@@ -92,7 +92,7 @@ public class GameSettingsTimeTrialFragment extends Fragment {
     }
     private void setupTimeTrialSpinner() {
         // Update options to include fractions
-        Float[] timeOptions = {0.166f, 0.5f, 1.0f, 2.0f, 3.0f, 5.0f, 10.0f};
+        Float[] timeOptions = {0.5f, 1.0f, 2.0f, 3.0f, 5.0f, 10.0f};
         String[] displayOptions = new String[timeOptions.length];
 
         // Create display strings with proper labels

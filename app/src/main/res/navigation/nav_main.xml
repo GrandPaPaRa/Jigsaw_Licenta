@@ -14,6 +14,12 @@
         <action
             android:id="@+id/action_menu_game_to_gameTimeTrialFragment"
             app:destination="@id/menu_game_time_trial" />
+        <action
+            android:id="@+id/action_menu_game_to_userStatisticsFragment"
+            app:destination="@id/userStatisticsFragment" />
+        <action
+            android:id="@+id/action_menu_game_to_leaderBoardFragment"
+            app:destination="@id/leaderBoardFragment" />
 
     </fragment>
     <fragment
@@ -29,6 +35,12 @@
         <action
             android:id="@+id/action_menu_settings_to_gameTimeTrialFragment"
             app:destination="@id/menu_game_time_trial" />
+        <action
+            android:id="@+id/action_menu_settings_to_userStatisticsFragment"
+            app:destination="@id/userStatisticsFragment" />
+        <action
+            android:id="@+id/action_menu_settings_to_leaderBoardFragment"
+            app:destination="@id/leaderBoardFragment" />
     </fragment>
     <fragment
         android:id="@+id/aiSettingsFragment"
@@ -44,6 +56,12 @@
         <action
             android:id="@+id/action_aiSettingsFragment_to_gameTimeTrialFragment"
             app:destination="@id/menu_game_time_trial" />
+        <action
+            android:id="@+id/action_aiSettingsFragment_to_userStatisticsFragment"
+            app:destination="@id/userStatisticsFragment" />
+        <action
+            android:id="@+id/action_aiSettingsFragment_to_leaderBoardFragment"
+            app:destination="@id/leaderBoardFragment" />
     </fragment>
     <fragment
         android:id="@+id/menu_game_time_trial"
@@ -55,6 +73,12 @@
         <action
             android:id="@+id/action_menu_game_time_trial_to_gameSettingsTimeTrialFragment"
             app:destination="@id/gameSettingsTimeTrialFragment" />
+        <action
+            android:id="@+id/action_menu_game_time_trial_to_userStatisticsFragment"
+            app:destination="@id/userStatisticsFragment" />
+        <action
+            android:id="@+id/action_menu_game_time_trial_to_leaderBoardFragment"
+            app:destination="@id/leaderBoardFragment" />
     </fragment>
     <fragment
         android:id="@+id/gameSettingsTimeTrialFragment"
@@ -72,5 +96,39 @@
         <action
             android:id="@+id/action_gameSettingsTimeTrialFragment_to_menu_settings"
             app:destination="@id/menu_settings" />
+        <action
+            android:id="@+id/action_gameSettingsTimeTrialFragment_to_userStatisticsFragment"
+            app:destination="@id/userStatisticsFragment" />
+        <action
+            android:id="@+id/action_gameSettingsTimeTrialFragment_to_leaderBoardFragment"
+            app:destination="@id/leaderBoardFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/leaderBoardFragment"
+        android:name="com.example.jigsaw_licenta.ui.statistics.LeaderBoardFragment"
+        android:label="LeaderBoardFragment" >
+        <action
+            android:id="@+id/action_leaderBoardFragment_to_userStatisticsFragment"
+            app:destination="@id/userStatisticsFragment" />
+        <action
+            android:id="@+id/action_leaderBoardFragment_to_menu_game_time_trial"
+            app:destination="@id/menu_game_time_trial" />
+        <action
+            android:id="@+id/action_leaderBoardFragment_to_menu_game"
+            app:destination="@id/menu_game" />
+    </fragment>
+    <fragment
+        android:id="@+id/userStatisticsFragment"
+        android:name="com.example.jigsaw_licenta.ui.statistics.UserStatisticsFragment"
+        android:label="UserStatisticsFragment" >
+        <action
+            android:id="@+id/action_userStatisticsFragment_to_menu_game_time_trial"
+            app:destination="@id/menu_game_time_trial" />
+        <action
+            android:id="@+id/action_userStatisticsFragment_to_menu_game"
+            app:destination="@id/menu_game" />
+        <action
+            android:id="@+id/action_userStatisticsFragment_to_leaderBoardFragment"
+            app:destination="@id/leaderBoardFragment" />
     </fragment>
 </navigation>

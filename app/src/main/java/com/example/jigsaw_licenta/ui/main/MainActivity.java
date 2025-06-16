@@ -6,9 +6,12 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -19,6 +22,8 @@ import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.ui.authentication.AuthenticationActivity;
 import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomnavigation.LabelVisibilityMode;
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
@@ -74,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = navHostFragment.getNavController();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        bottomNav.setLabelVisibilityMode(NavigationBarView.LABEL_VISIBILITY_LABELED);
+
         NavigationUI.setupWithNavController(bottomNav, navController);
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -88,6 +95,20 @@ public class MainActivity extends AppCompatActivity {
                 if (currentDestination != R.id.menu_game_time_trial) {
                     navController.popBackStack(R.id.menu_game_time_trial, false);
                     navController.navigate(R.id.menu_game_time_trial);
+                }
+                return true;
+            }
+            else if (item.getItemId() == R.id.userStatisticsFragment) {
+                if (currentDestination != R.id.userStatisticsFragment) {
+                    navController.popBackStack(R.id.userStatisticsFragment, false);
+                    navController.navigate(R.id.userStatisticsFragment);
+                }
+                return true;
+            }
+            else if (item.getItemId() == R.id.leaderBoardFragment) {
+                if (currentDestination != R.id.leaderBoardFragment) {
+                    navController.popBackStack(R.id.leaderBoardFragment, false);
+                    navController.navigate(R.id.leaderBoardFragment);
                 }
                 return true;
             }

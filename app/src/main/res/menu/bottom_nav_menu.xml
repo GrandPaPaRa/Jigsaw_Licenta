@@ -3,10 +3,21 @@
     <item
         android:id="@+id/menu_game"
         android:icon="@drawable/outline_arrow_right_24"
-        android:title="Casual" />
+        android:title="Casual"
+        android:checkable="false"/>
     <item
         android:id="@+id/menu_game_time_trial"
         android:icon="@drawable/outline_avg_time_24"
         android:title="Time Trial"
-        />
+        android:checkable="false"/>
+    <item
+        android:id="@+id/userStatisticsFragment"
+        android:icon="@drawable/outline_bookmark_flag_24"
+        android:title="Stats"
+        android:checkable="false"/>
+    <item
+        android:id="@+id/leaderBoardFragment"
+        android:icon="@drawable/outline_flag_24"
+        android:title="Leaderboard"
+        android:checkable="false"/>
 </menu>
