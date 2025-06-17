@@ -52,4 +52,6 @@ dependencies {
     implementation ("com.google.firebase:firebase-storage")
     implementation ("com.google.android.gms:play-services-auth:20.7.0")
     implementation ("androidx.preference:preference:1.2.1")
+
+    implementation ("com.google.code.gson:gson:2.10.1")
 }

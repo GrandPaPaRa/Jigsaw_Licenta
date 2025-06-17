@@ -1,6 +1,7 @@
 package com.example.jigsaw_licenta.ui.main;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +17,20 @@ import com.example.jigsaw_licenta.model.Jigsaw;
 import com.example.jigsaw_licenta.model.StopType;
 import com.example.jigsaw_licenta.model.Tree;
 import com.example.jigsaw_licenta.utils.Config;
+import com.example.jigsaw_licenta.utils.SimulationData;
 import com.example.jigsaw_licenta.utils.SimulationResult;
 import com.example.jigsaw_licenta.viewmodel.AiSettingsViewModel;
 import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
 import com.google.android.material.slider.Slider;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -191,6 +200,8 @@ public class AiSettingsFragment extends Fragment {
 
             for (int i = 0; i < games; i++) {
 
+                long startGameTime = System.nanoTime();
+
                 final int currentProgress = i + 1;
                 requireActivity().runOnUiThread(() -> {
                     int progressPercent = (currentProgress * 100) / games;
@@ -223,6 +234,11 @@ public class AiSettingsFragment extends Fragment {
                 if (score > maxScore) {
                     maxScore = score;
                 }
+
+                long endGameTime = System.nanoTime();
+                long elapsedGameTimeMs = (endGameTime - startGameTime) / 1_000_000; // Convert to milliseconds
+
+                System.out.println("Game " + i + " took " + elapsedGameTimeMs + " ms");
             }
 
             // Final UI update
@@ -236,7 +252,44 @@ public class AiSettingsFragment extends Fragment {
                 progressTextView.setVisibility(View.GONE);
                 simulateGamesButton.setEnabled(true);
 
-                // Optional: Save results to file or display more stats
+                // Save results to file
+
+                SimulationData simulationData = new SimulationData(
+                        maxIters,
+                        maxDepth,
+                        c,
+                        explorationRateSimulation,
+                        results
+                );
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String json = gson.toJson(simulationData);
+
+                // Save to file
+                String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US).format(new Date());
+
+                String fileName = String.format(
+                        Locale.US,
+                        "simulation_result_%dx%d_iters-%d_depth-%d_c-%.2f_explorationRateSimulation-%.2f_%s.json",
+                        rows,
+                        cols,
+                        maxIters,
+                        maxDepth,
+                        c,
+                        explorationRateSimulation,
+                        timeStamp
+                );
+
+                File dir = requireContext().getExternalFilesDir(null);
+                File file = new File(dir, fileName);
+
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write(json);
+                    Log.d("Simulation", "Results saved to: " + file.getAbsolutePath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e("Simulation", "Failed to save simulation results", e);
+                }
             });
         });
 
