@@ -25,7 +25,6 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
     public long board; // Bitmask for the placed pieces
     private int figureIndex;
     public int quantity;
-
     private static final Random random = new Random();
 
     /**
@@ -69,7 +68,6 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
     public int getRows() {
         return rows;
     }
-
     public int getCols() {
         return cols;
     }
@@ -248,7 +246,7 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
         if (action != skipActionValue) {
             this.board |= (figure() >>> action);
         }
-        consumePiece(); // Modified to use piece queue
+        consumePiece();
     }
 
     public void performAction(int action, Piece piece) {
@@ -292,6 +290,13 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
 //
 //        return score;
         return hasFinished()? 1 : 0;
+//        if (hasFinished()) return 100;
+//
+//        int filled = Long.bitCount(board);
+//        int total = rows * cols;
+//
+//        // Quadratic scaling — rewards more as you approach finish
+//        return (filled * filled * 100) / (total * total);
     }
 
     @Override

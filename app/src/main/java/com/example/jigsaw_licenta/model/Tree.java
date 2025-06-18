@@ -3,6 +3,7 @@ package com.example.jigsaw_licenta.model;
 import com.example.jigsaw_licenta.utils.Config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -29,7 +30,19 @@ public class Tree {
         this.rootState = jigsaw.cloneState();
     }
     public byte findBestAction(){
-        return stopType == StopType.TIME ? findBestActionbyTime() : findBestActionbyIterations();
+        byte result = stopType == StopType.TIME ? findBestActionbyTime() : findBestActionbyIterations();
+
+//        if (rootState.getConsecutiveSkips() >= config.maxDepth / 2 && result == rootState.getSkipActionValue()) {
+//            // Force a placement action if any available
+//            List<Byte> actions = rootState.legalActions();
+//            for (byte action : actions) {
+//                if (action != rootState.getSkipActionValue()) {
+//                    return action; // Return first legal placement instead of another skip
+//                }
+//            }
+//        }
+
+        return result;
     }
     public byte findBestActionbyIterations(){
         for (int iter = 0; iter < config.maxIters; iter++) {
@@ -46,10 +59,13 @@ public class Tree {
             int nodeIndex = rootIndex;
             int depth = 0;
 
+            Node node = nodes.get(nodeIndex);
+            List<Byte> legalActions = new ArrayList<>();
+
             // Selection phase
             while (!state.hasFinished() && depth < config.maxDepth) {
-                Node node = nodes.get(nodeIndex);
-                List<Byte> legalActions = state.legalActions();
+                node = nodes.get(nodeIndex);
+                legalActions = state.legalActions();
 
                 if (node.children.size() < legalActions.size()) {
                     break; // Not fully expanded
@@ -63,9 +79,9 @@ public class Tree {
 
             // Expansion
             if (!state.hasFinished() && depth < config.maxDepth) {
-                Node node = nodes.get(nodeIndex);
-                List<Byte> legalActions = state.legalActions();
-
+                //Node node = nodes.get(nodeIndex);
+                //List<Byte> legalActions = state.legalActions();
+                //Collections.shuffle(legalActions);
                 for (byte action : legalActions) {
                     if (!node.children.containsKey(action)) {
                         int childIndex = createNode();
@@ -87,12 +103,12 @@ public class Tree {
             }
         }
 
-        return getMostVisitedAction(rootIndex);
+        return getMostVisitedAction(rootIndex,config.maxIters);
     }
 
     public byte findBestActionbyTime() {
         long startTime = System.nanoTime();
-
+        int iterations = 0;
         while(true) {
 
             //CANCELLATION FROM OUTSIDE THREAD(HINT OVERLAPPING)
@@ -152,9 +168,10 @@ public class Tree {
                 int score = state.eval();
                 backpropagate(score, 1, nodeIndex);
             }
+            iterations++;
         }
 
-        return getMostVisitedAction(rootIndex);
+        return getMostVisitedAction(rootIndex,iterations);
     }
 
     private byte selectBestAction(int nodeIndex, Jigsaw state) {
@@ -165,7 +182,7 @@ public class Tree {
         for (Map.Entry<Byte, Integer> entry : node.children.entrySet()) {
             Node child = nodes.get(entry.getValue());
             float value = child.ucb(config.c, node.visits);
-            if (value > bestValue) {
+            if (value > bestValue || (value == bestValue && entry.getKey() > bestAction)) {
                 bestValue = value;
                 bestAction = entry.getKey();
             }
@@ -219,16 +236,30 @@ public class Tree {
         }
     }
 
-    private byte getMostVisitedAction(int nodeIndex) {
+    private byte getMostVisitedAction(int nodeIndex, int iterations) {
         Node node = nodes.get(nodeIndex);
         byte bestAction = -1;
         int mostVisits = -1;
 
-        for (Map.Entry<Byte, Integer> entry : node.children.entrySet()) {
+
+
+        // Sort entries by action (ascending)
+        List<Map.Entry<Byte, Integer>> sortedEntries = new ArrayList<>(node.children.entrySet());
+        sortedEntries.sort(Map.Entry.comparingByKey()); // Sort by action (byte)
+
+        int tolerance = iterations % sortedEntries.size();
+
+        System.out.println("Action visit counts with tolerance "+tolerance+" :");
+        for (Map.Entry<Byte, Integer> entry : sortedEntries) {
             Node child = nodes.get(entry.getValue());
-            if (child.visits > mostVisits) {
-                mostVisits = child.visits;
-                bestAction = entry.getKey();
+            byte action = entry.getKey();
+            int visits = child.visits;
+
+            System.out.println("Action " + action + ": " + visits + " visits");
+
+            if (visits > mostVisits + tolerance) {
+                mostVisits = visits;
+                bestAction = action;
             }
         }
 

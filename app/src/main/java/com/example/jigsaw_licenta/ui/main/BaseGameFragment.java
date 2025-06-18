@@ -331,7 +331,8 @@ public abstract class BaseGameFragment extends Fragment {
                         v.performClick();
                         v.bringToFront();
 
-                        jigsawGame.setFigureIndex(matchedPiece.getType().ordinal());
+                        if (matchedPiece != null)
+                            jigsawGame.setFigureIndex(matchedPiece.getType().ordinal());
                         return true;
 
                     case MotionEvent.ACTION_MOVE:

@@ -217,11 +217,11 @@ public class AiSettingsFragment extends Fragment {
 
                 while (!jigsaw.hasFinished()) {
                     bestAction = tree.findBestAction();
-                    //System.out.println(jigsaw);
-                    //System.out.println("Best Action: " + bestAction);
+                    System.out.println(jigsaw);
+                    System.out.println("Best Action: " + bestAction);
                     jigsaw.performAction(bestAction);
-                   //System.out.println("After Placement");
-                    //System.out.println(jigsaw);
+                   System.out.println("After Placement");
+                    System.out.println(jigsaw);
                     tree = new Tree(jigsaw, new Config(maxIters, maxDepth, c, explorationRateSimulation),
                             StopType.ITERATIONS);
                     movesPerformed++;
