@@ -1,46 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
+
     <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
         android:orientation="vertical">
+
         <Button
             android:id="@+id/generateMockDataButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Generate Mock Data"
             android:layout_gravity="center_horizontal"
-
             android:textColor="@android:color/white"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/nicknameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:text="Loading..."
+            android:layout_marginBottom="16dp" />
+
         <LinearLayout
+            android:id="@+id/spinnerContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
+
 
             <TextView
-                android:id="@+id/nicknameText"
+                android:id="@+id/boardSizeLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:text="Board Size"
                 android:textStyle="bold"
-                android:text="Loading..."
-                android:layout_marginBottom="16dp"/>
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
 
-            <TextView
-                android:id="@+id/statsText"
+
+            <Spinner
+                android:id="@+id/boardSizeSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:text="Loading statistics..."
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="24dp" />
 
-        </LinearLayout>>
+
+            <TextView
+                android:id="@+id/timeTrialLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Time Trial Duration"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Spinner for Time Trial -->
+            <Spinner
+                android:id="@+id/timeLimitSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/statsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_margin="8dp"
+            >
+
+            <!-- Casual games completed block -->
+            <TextView
+                android:id="@+id/casualGamesCompleted"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_blue"
+                android:textColor="@color/blue_text"
+                android:padding="12dp"
+                android:textSize="16sp"
+                android:text="Casual Games Completed: 0"
+                />
+
+            <!-- Spacer -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="12dp" />
+
+            <!-- Time trial block -->
+            <TextView
+                android:id="@+id/timeTrialStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_purple"
+                android:textColor="@color/purple_text"
+                android:padding="12dp"
+                android:textSize="16sp"
+                android:text="Time Trial (60s)\nHigh Score: 0.0\nAttempts: 0"
+                />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

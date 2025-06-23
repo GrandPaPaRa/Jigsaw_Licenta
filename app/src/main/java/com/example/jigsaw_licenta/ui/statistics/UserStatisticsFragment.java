@@ -1,10 +1,14 @@
 package com.example.jigsaw_licenta.ui.statistics;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,131 +22,130 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class UserStatisticsFragment extends Fragment {
-    private FirebaseFirestore db;
-    private String userId;
-    private TextView nicknameText, statsText;
+    private Spinner boardSizeSpinner, timeLimitSpinner;
+    private TextView nicknameText;
+    private TextView casualGamesCompleted, timeTrialStats;
+    private FirebaseStatsHelper statsHelper;
+    private Map<String, Object> cachedStats;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        db = FirebaseFirestore.getInstance();
-        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        // Initialize mock data if needed
-        //new FirebaseStatsHelper().initializeMockData();
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_user_statistics, container, false);
+
+        casualGamesCompleted = view.findViewById(R.id.casualGamesCompleted);
+        timeTrialStats = view.findViewById(R.id.timeTrialStats);
         nicknameText = view.findViewById(R.id.nicknameText);
-        statsText = view.findViewById(R.id.statsText);
+        boardSizeSpinner = view.findViewById(R.id.boardSizeSpinner);
+        timeLimitSpinner = view.findViewById(R.id.timeLimitSpinner);
+        Button mockButton = view.findViewById(R.id.generateMockDataButton);
+
+        statsHelper = new FirebaseStatsHelper();
+
+        statsHelper.loadUserNickname(nickname -> nicknameText.setText("Nickname: " + nickname));
+        statsHelper.loadUserStats(boardSizes -> {
+            cachedStats = boardSizes;
+            setupSpinners(); // Populate dropdowns and react to changes
+        });
+
+        mockButton.setOnClickListener(v -> statsHelper.generateMockDataIfNeeded());
+
         return view;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    private void setupSpinners() {
 
-        Button generateMockDataButton = view.findViewById(R.id.generateMockDataButton);
-        generateMockDataButton.setOnClickListener(v -> {
-            new FirebaseStatsHelper().generateMockDataIfNeeded();
-            Toast.makeText(getContext(), "Mock data generated!", Toast.LENGTH_SHORT).show();
-            loadUserStats(); // Refresh the displayed stats
-        });
+        ArrayAdapter<String> boardAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, FirebaseStatsHelper.BOARD_SIZES);
+        boardAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        boardSizeSpinner.setAdapter(boardAdapter);
 
-        loadUserNickname();
-        loadUserStats();
+
+        List<Integer> timeValues = FirebaseStatsHelper.TIME_TRIAL_TIMES;
+
+
+        List<String> timeSecondsList = timeValues.stream()
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+
+
+        List<String> timeDisplayList = timeValues.stream()
+                .map(seconds -> {
+                    int mins = seconds / 60;
+                    int rem = seconds % 60;
+                    if (mins > 0 && rem > 0) return mins + " min " + rem + "s";
+                    else if (mins > 0) return mins + " min";
+                    else return rem + "s";
+                })
+                .collect(Collectors.toList());
+
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, timeDisplayList);
+        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        timeLimitSpinner.setAdapter(timeAdapter);
+
+        // On selection, use the real time in seconds for internal use
+        AdapterView.OnItemSelectedListener listener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateStatsDisplay();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        };
+
+        boardSizeSpinner.setOnItemSelectedListener(listener);
+        timeLimitSpinner.setOnItemSelectedListener(listener);
     }
 
-    private void loadUserNickname() {
-        db.collection("users")
-                .document(userId)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            String nickname = document.getString("nickname");
-                            nicknameText.setText("Nickname: " + (nickname != null ? nickname : "Unknown"));
-                        }
-                    }
-                });
+    private void updateStatsDisplay() {
+        if (cachedStats == null) return;
+
+        String board = boardSizeSpinner.getSelectedItem().toString();
+        int timeIndex = timeLimitSpinner.getSelectedItemPosition();
+        String time = FirebaseStatsHelper.TIME_TRIAL_TIMES.get(timeIndex).toString();
+        int timeSeconds = Integer.parseInt(time);
+        String timeDisplay = (timeSeconds >= 60) ?
+                (timeSeconds / 60) + " min" + (timeSeconds % 60 != 0 ? " " + (timeSeconds % 60) + "s" : "")
+                : timeSeconds + "s";
+
+        Map<String, Object> boardData = (Map<String, Object>) cachedStats.get(board);
+        if (boardData == null) return;
+
+        Long completed = getLongValue(boardData, "completed");
+
+        Map<String, Object> timeTrial = (Map<String, Object>) boardData.get("timeTrial");
+        if (timeTrial == null) return;
+
+        Map<String, Object> timeData = (Map<String, Object>) timeTrial.get(time);
+        if (timeData == null) return;
+
+        Long attempts = getLongValue(timeData, "attempts");
+        Double highScore = getDoubleValue(timeData, "highScore");
+
+        casualGamesCompleted.setText("Casual Games Completed: " + completed);
+
+        String timeTrialText = "Time Trial (" + timeDisplay + ")\n" +
+                "High Score: " + String.format("%.1f", highScore) + "\n" +
+                "Attempts: " + attempts;
+
+        timeTrialStats.setText(timeTrialText);
     }
 
-    private void loadUserStats() {
-        db.collection("users")
-                .document(userId)
-                .collection("statistics")
-                .document("game_stats")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            // Build stats string
-                            StringBuilder statsBuilder = new StringBuilder();
-                            Map<String, Object> boardSizes = (Map<String, Object>) document.get("boardSizes");
-
-                            if (boardSizes != null) {
-                                for (String size : FirebaseStatsHelper.BOARD_SIZES) {
-                                    Map<String, Object> sizeData = (Map<String, Object>) boardSizes.get(size);
-                                    if (sizeData != null) {
-                                        statsBuilder.append("\nBoard Size: ").append(size).append("\n");
-
-                                        // Casual stats
-                                        Long completed = getLongValue(sizeData, "completed");
-                                        statsBuilder.append("Completed: ").append(completed != null ? completed : 0).append("\n");
-
-                                        // Time trial stats
-                                        Map<String, Object> timeTrial = (Map<String, Object>) sizeData.get("timeTrial");
-                                        if (timeTrial != null) {
-                                            statsBuilder.append("Time Trial:\n");
-                                            for (int time : FirebaseStatsHelper.TIME_TRIAL_TIMES) {
-                                                Map<String, Object> timeData = (Map<String, Object>) timeTrial.get(String.valueOf(time));
-                                                if (timeData != null) {
-                                                    Long attempts = getLongValue(timeData, "attempts");
-                                                    Double highScore = getDoubleValue(timeData, "highScore");
-                                                    statsBuilder.append(time).append("s: ")
-                                                            .append("High: ").append(highScore != null ? String.format("%.1f", highScore) : "0")
-                                                            .append(" (Attempts: ").append(attempts != null ? attempts : 0).append(")\n");
-                                                }
-                                            }
-                                        }
-                                        statsBuilder.append("\n");
-                                    }
-                                }
-                            }
-                            statsText.setText(statsBuilder.toString());
-                        }
-                    }
-                });
-    }
-
-    // Helper methods remain the same
     private Long getLongValue(Map<String, Object> map, String key) {
         Object value = map.get(key);
-        if (value instanceof Long) {
-            return (Long) value;
-        } else if (value instanceof Integer) {
-            return ((Integer) value).longValue();
-        }
-        return null;
+        return value instanceof Number ? ((Number) value).longValue() : 0L;
     }
 
     private Double getDoubleValue(Map<String, Object> map, String key) {
         Object value = map.get(key);
-        if (value instanceof Double) {
-            return (Double) value;
-        } else if (value instanceof Long) {
-            return ((Long) value).doubleValue();
-        } else if (value instanceof Integer) {
-            return ((Integer) value).doubleValue();
-        }
-        return null;
+        return value instanceof Number ? ((Number) value).doubleValue() : 0.0;
     }
+
 }

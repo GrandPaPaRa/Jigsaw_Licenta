@@ -5,7 +5,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,21 +26,19 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LeaderBoardFragment extends Fragment {
     private static final int LEADERBOARD_LIMIT = 10;
     private static final String TAG = "LeaderBoardFragment";
-    private FirebaseFirestore db;
+    private Spinner boardSizeSpinner, timeLimitSpinner, limitSpinner;
     private LinearLayout leaderboardContainer;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        db = FirebaseFirestore.getInstance();
-    }
+    private int spinnerInitCount = 0;
+    private boolean initialLoadComplete = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -48,131 +49,83 @@ public class LeaderBoardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        boardSizeSpinner = view.findViewById(R.id.boardSizeSpinner);
+        timeLimitSpinner = view.findViewById(R.id.timeLimitSpinner);
+        limitSpinner = view.findViewById(R.id.limitSpinner);
         leaderboardContainer = view.findViewById(R.id.leaderboardContainer);
-        loadLeaderboards();
+
+        setupSpinners();
     }
 
-    private void loadLeaderboards() {
+    private void setupSpinners() {
+        ArrayAdapter<String> boardAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, FirebaseStatsHelper.BOARD_SIZES);
+        boardAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        boardSizeSpinner.setAdapter(boardAdapter);
+
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item,
+                FirebaseStatsHelper.TIME_TRIAL_TIMES.stream()
+                        .map(seconds -> {
+                            if (seconds < 60) {
+                                return seconds + " sec";
+                            } else if (seconds % 60 == 0) {
+                                return (seconds / 60) + " min";
+                            } else {
+                                return String.format(Locale.getDefault(), "%.1f min", seconds / 60.0);
+                            }
+                        })
+                        .collect(Collectors.toList()));
+        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        timeLimitSpinner.setAdapter(timeAdapter);
+        ArrayAdapter<String> limitAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item,
+                Arrays.asList("10", "50", "100"));
+        limitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        limitSpinner.setAdapter(limitAdapter);
+
+        AdapterView.OnItemSelectedListener refreshListener = new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                spinnerInitCount++;
+                if (spinnerInitCount >= 3 && !initialLoadComplete) {
+                    initialLoadComplete = true; // only once
+                    fetchLeaderboard();
+                } else if (initialLoadComplete) {
+                    fetchLeaderboard();
+                }
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        };
+
+        boardSizeSpinner.setOnItemSelectedListener(refreshListener);
+        timeLimitSpinner.setOnItemSelectedListener(refreshListener);
+        limitSpinner.setOnItemSelectedListener(refreshListener);
+    }
+
+    private void fetchLeaderboard() {
+        String board = boardSizeSpinner.getSelectedItem().toString();
+        int selectedIndex = timeLimitSpinner.getSelectedItemPosition();
+        int time = FirebaseStatsHelper.TIME_TRIAL_TIMES.get(selectedIndex); // still in seconds
+        int limit = Integer.parseInt(limitSpinner.getSelectedItem().toString());
+
         leaderboardContainer.removeAllViews();
 
-        for (String boardSize : FirebaseStatsHelper.BOARD_SIZES) {
-            for (int timeLimit : FirebaseStatsHelper.TIME_TRIAL_TIMES) {
-                addLeaderboardSection(boardSize, timeLimit);
+        FirebaseStatsHelper.getLeaderboardData(board, time, limit, (entries) -> {
+            int rank = 1;
+            for (FirebaseStatsHelper.LeaderboardEntry entry : entries) {
+                TextView text = new TextView(requireContext());
+                text.setText(String.format(Locale.getDefault(),
+                        "%d. %s: %.1f", rank++, entry.nickname, entry.score));
+                text.setTextSize(16f);
+                text.setPadding(16, 8, 16, 8);
+                leaderboardContainer.addView(text);
             }
-        }
-    }
 
-    private void addLeaderboardSection(String boardSize, int timeLimit) {
-        TextView sectionHeader = new TextView(requireContext());
-        sectionHeader.setText(String.format(Locale.getDefault(),
-                "Board: %s | Time: %ds", boardSize, timeLimit));
-        sectionHeader.setTextSize(18);
-        sectionHeader.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
-        sectionHeader.setPadding(0, 16, 0, 8);
-        leaderboardContainer.addView(sectionHeader);
-
-        LinearLayout entriesContainer = new LinearLayout(requireContext());
-        entriesContainer.setOrientation(LinearLayout.VERTICAL);
-        leaderboardContainer.addView(entriesContainer);
-
-        TextView loadingText = new TextView(requireContext());
-        loadingText.setText("Loading...");
-        loadingText.setPadding(16, 4, 0, 4);
-        entriesContainer.addView(loadingText);
-
-        // Query all documents where the path exists, regardless of value
-        db.collectionGroup("statistics")
-                .orderBy("boardSizes." + boardSize + ".timeTrial." + timeLimit + ".highScore", Query.Direction.DESCENDING)
-                .limit(LEADERBOARD_LIMIT)
-                .get()
-                .addOnCompleteListener(task -> {
-                    entriesContainer.removeAllViews();
-
-                    if (!task.isSuccessful()) {
-                        Log.e(TAG, "Query failed", task.getException());
-                        showErrorMessage(entriesContainer, "Error loading data");
-                        return;
-                    }
-
-                    if (task.getResult().isEmpty()) {
-                        showErrorMessage(entriesContainer, "No scores available");
-                        return;
-                    }
-
-                    List<Task<DocumentSnapshot>> nicknameTasks = new ArrayList<>();
-                    List<LeaderboardEntry> entries = new ArrayList<>();
-
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        try {
-                            // Safely get the nested highScore value
-                            Map<String,Object> boardSizes = (Map<String,Object>) document.get("boardSizes");
-                            if (boardSizes != null) {
-                                Map<String,Object> sizeData = (Map<String,Object>) boardSizes.get(boardSize);
-                                if (sizeData != null) {
-                                    Map<String,Object> timeTrial = (Map<String,Object>) sizeData.get("timeTrial");
-                                    if (timeTrial != null) {
-                                        Map<String,Object> timeData = (Map<String,Object>) timeTrial.get(String.valueOf(timeLimit));
-                                        if (timeData != null) {
-                                            Object scoreObj = timeData.get("highScore");
-                                            if (scoreObj instanceof Number) {
-                                                double highScore = ((Number)scoreObj).doubleValue();
-                                                String userId = document.getReference().getParent().getParent().getId();
-                                                entries.add(new LeaderboardEntry(userId, highScore));
-                                                nicknameTasks.add(db.collection("users").document(userId).get());
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error processing document", e);
-                        }
-                    }
-
-                    // Process all nickname fetches
-                    Tasks.whenAllComplete(nicknameTasks).addOnCompleteListener(nickTask -> {
-                        entriesContainer.removeAllViews();
-                        int rank = 1;
-
-                        for (int i = 0; i < entries.size(); i++) {
-                            try {
-                                Task<DocumentSnapshot> nickTaskSingle = (Task<DocumentSnapshot>) nicknameTasks.get(i);
-                                if (nickTaskSingle.isSuccessful() && nickTaskSingle.getResult() != null) {
-                                    DocumentSnapshot userDoc = nickTaskSingle.getResult();
-                                    String nickname = userDoc.getString("nickname");
-                                    double score = entries.get(i).score;
-
-                                    TextView entry = new TextView(requireContext());
-                                    entry.setText(String.format(Locale.getDefault(),
-                                            "%d. %s: %.1f", rank++,
-                                            nickname != null ? nickname : "Player",
-                                            score));
-                                    entry.setPadding(16, 4, 0, 4);
-                                    entriesContainer.addView(entry);
-                                }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error displaying entry: " + e.getMessage());
-                            }
-                        }
-                    });
-                });
-    }
-
-    private void showErrorMessage(LinearLayout container, String message) {
-        TextView errorText = new TextView(requireContext());
-        errorText.setText(message);
-        errorText.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-        errorText.setPadding(16, 4, 0, 4);
-        container.addView(errorText);
-    }
-
-    private static class LeaderboardEntry {
-        String userId;
-        double score;
-
-        LeaderboardEntry(String userId, double score) {
-            this.userId = userId;
-            this.score = score;
-        }
+            if (entries.isEmpty()) {
+                TextView empty = new TextView(requireContext());
+                empty.setText("No entries found.");
+                leaderboardContainer.addView(empty);
+            }
+        });
     }
 }

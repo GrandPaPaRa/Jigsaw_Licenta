@@ -70,7 +70,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingsButton"
-        app:srcCompat="@drawable/outline_auto_delete_24" />
+        app:srcCompat="@drawable/rounded_delete_24" />
 
     <ImageView
         android:id="@+id/HintButton"

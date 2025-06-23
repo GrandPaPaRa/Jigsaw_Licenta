@@ -7,4 +7,6 @@
     <color name="gray_translucent">#88AAAAAA</color>
     <color name="gray_bright">#DCDCDC</color>
     <color name="error_red">#F44336</color>
+    <color name="blue_text">#003366</color>     <!-- Dark Navy Blue for good contrast -->
+    <color name="purple_text">#3B0066</color>
 </resources>
