@@ -54,4 +54,5 @@ dependencies {
     implementation ("androidx.preference:preference:1.2.1")
 
     implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("org.rajawali3d:rajawali:1.1.970")
 }
