@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.ui.main.MainActivity;
+import com.example.jigsaw_licenta.utils.NetworkUtils;
 import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,6 +26,7 @@ public class LoginFragment extends Fragment {
     private ProgressBar progressBar;
     private FirebaseAuth mAuth;
     private View rootView;
+    private Button offlineButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,12 +50,20 @@ public class LoginFragment extends Fragment {
     }
 
     private void checkAuthState() {
+       if(NetworkUtils.isOfflineMode(requireActivity().getApplication()))
+           navigateToMainActivity();
+
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            // User is already logged in, go directly to MainActivity
             navigateToMainActivity();
         }
+
+        //send toast if no internet connection to not waste time on login
+        if(!NetworkUtils.isNetworkAvailable(requireContext())){
+            showToast("No internet connection available, use offline mode");
+        }
     }
+
 
     private void initializeViews() {
         emailEditText = rootView.findViewById(R.id.emailEditText);
@@ -61,15 +71,24 @@ public class LoginFragment extends Fragment {
         loginButton = rootView.findViewById(R.id.loginButton);
         registerButton = rootView.findViewById(R.id.registerButton);
         progressBar = rootView.findViewById(R.id.progressBar);
+        offlineButton = rootView.findViewById(R.id.offlineButton);
     }
 
     private void setupListeners() {
         loginButton.setOnClickListener(v -> loginUser());
         registerButton.setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_login_to_register));
+        offlineButton.setOnClickListener(v -> {
+            NetworkUtils.setOfflineMode(requireActivity().getApplication(), true);
+            navigateToMainActivity();
+        });
     }
 
     private void loginUser() {
+        if (!NetworkUtils.isNetworkAvailable(requireContext())){
+            showToast("No internet connection use offline mode!");
+            return;
+        }
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
@@ -108,4 +127,14 @@ public class LoginFragment extends Fragment {
     private void showToast(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
     }
+    private void checkNetworkStatus() {
+        boolean isNetworkAvailable = NetworkUtils.isNetworkAvailable(requireContext());
+        boolean isOfflineMode = NetworkUtils.isOfflineMode(requireActivity().getApplication());
+
+        if (!isNetworkAvailable && !isOfflineMode) {
+            showToast("No internet connection available");
+        }
+
+    }
+
 }

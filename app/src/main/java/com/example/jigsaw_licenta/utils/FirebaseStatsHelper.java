@@ -1,5 +1,8 @@
 package com.example.jigsaw_licenta.utils;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
+import android.app.Application;
 import android.util.Log;
 
 import com.example.jigsaw_licenta.model.Jigsaw;
@@ -124,7 +127,12 @@ public class FirebaseStatsHelper {
                 .addOnFailureListener(e -> Log.w(TAG, "Error generating mock data", e));
     }
 
-    public void updateCasualGame(Jigsaw game) {
+    public void updateCasualGame(Jigsaw game, Application application) {
+
+        if(NetworkUtils.isOfflineMode(application)){
+            return;
+        }
+
         String boardSize = getBoardKey(game);
 
         DocumentReference userStatsRef = db.collection(USERS_COLLECTION)
@@ -141,7 +149,12 @@ public class FirebaseStatsHelper {
                     initializeNewUserStats(); // Reinitialize if something went wrong
                 });
     }
-    public void updateTimeTrialScore(Jigsaw game, int timeLimit, float score) {
+    public void updateTimeTrialScore(Jigsaw game, int timeLimit, float score, Application application) {
+
+        if(application == null || NetworkUtils.isOfflineMode(application)){
+            return;
+        }
+
         String boardSize = getBoardKey(game);
         String timeKey = String.valueOf(timeLimit);
 

@@ -140,7 +140,10 @@ public class GameTimeTrialFragment extends BaseGameFragment implements GameInter
         float score = ((GameTimeTrialViewModel)gameViewModel).getTotalScore().getValue();
 
         //****handle saving the score to the database ******
-        new FirebaseStatsHelper().updateTimeTrialScore(jigsawGame,(int)(gameSettingsViewModel.getTimeTrialDuration().getValue() * 60),score);
+        new FirebaseStatsHelper().updateTimeTrialScore(jigsawGame,
+                (int)(gameSettingsViewModel.getTimeTrialDuration().getValue() * 60),
+                score,
+                getActivity().getApplication());
 
         //show score and time up dialog
 

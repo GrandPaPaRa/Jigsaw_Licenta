@@ -4,20 +4,31 @@
         android:id="@+id/menu_game"
         android:icon="@drawable/outline_arrow_right_24"
         android:title="Casual"
-        android:checkable="false"/>
+        android:checkable="false"
+        android:tint="@color/nav_menu_item_color"
+        android:titleTextColor="@color/nav_menu_item_color"/>
+
     <item
         android:id="@+id/menu_game_time_trial"
         android:icon="@drawable/outline_avg_time_24"
         android:title="Time Trial"
-        android:checkable="false"/>
+        android:checkable="false"
+        android:tint="@color/nav_menu_item_color"
+        android:titleTextColor="@color/nav_menu_item_color"/>
+
     <item
         android:id="@+id/userStatisticsFragment"
         android:icon="@drawable/outline_bookmark_flag_24"
         android:title="Stats"
-        android:checkable="false"/>
+        android:checkable="false"
+        android:tint="@color/nav_menu_item_color"
+        android:titleTextColor="@color/nav_menu_item_color"/>
+
     <item
         android:id="@+id/leaderBoardFragment"
         android:icon="@drawable/outline_flag_24"
         android:title="Leaderboard"
-        android:checkable="false"/>
+        android:checkable="false"
+        android:tint="@color/nav_menu_item_color"
+        android:titleTextColor="@color/nav_menu_item_color"/>
 </menu>

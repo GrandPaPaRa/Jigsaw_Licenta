@@ -18,6 +18,7 @@ import androidx.navigation.Navigation;
 
 import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.ui.authentication.AuthenticationActivity;
+import com.example.jigsaw_licenta.utils.NetworkUtils;
 import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
 import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.google.android.material.slider.Slider;
@@ -166,7 +167,13 @@ public class SettingsFragment extends Fragment {
         });
     }
     private void logoutUser() {
-        FirebaseAuth.getInstance().signOut();
+        if(NetworkUtils.isOfflineMode(requireActivity().getApplication())){
+            NetworkUtils.setOfflineMode(requireActivity().getApplication(), false);
+        }
+        else{
+            FirebaseAuth.getInstance().signOut();
+        }
+
         Intent intent = new Intent(requireActivity(), AuthenticationActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         GameViewModel.clearSavedGames(requireActivity().getApplication());

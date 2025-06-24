@@ -15,6 +15,7 @@ import androidx.navigation.Navigation;
 import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.ui.main.MainActivity;
 import com.example.jigsaw_licenta.utils.FirebaseStatsHelper;
+import com.example.jigsaw_licenta.utils.NetworkUtils;
 import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -65,6 +66,11 @@ public class RegisterFragment extends Fragment {
     }
 
     private void registerUser() {
+        if (!NetworkUtils.isNetworkAvailable(requireContext())){
+            showToast("No internet connection use offline mode!");
+            return;
+        }
+
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
         String nickname = nicknameEditText.getText().toString().trim();

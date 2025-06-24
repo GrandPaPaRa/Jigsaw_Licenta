@@ -92,7 +92,7 @@ public class GameFragment extends BaseGameFragment implements GameInterface {
     }
     @Override
     protected void onFinishedGame() {
-        new FirebaseStatsHelper().updateCasualGame(jigsawGame);
+        new FirebaseStatsHelper().updateCasualGame(jigsawGame,requireActivity().getApplication());
         showGameOverDialog();
     }
 
