@@ -154,9 +154,7 @@ public class GameTimeTrialFragment extends BaseGameFragment implements GameInter
                 updateScoreDisplay();
             } else {
                 totalScoreTextView.setText("Score: --");
-                totalScoreTextView.setTextColor(Color.BLACK);
                 gamesPlayedTextView.setText("Games: --");
-                gamesPlayedTextView.setTextColor(Color.BLACK);
             }
         });
 

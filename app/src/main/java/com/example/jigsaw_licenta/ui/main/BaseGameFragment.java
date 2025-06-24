@@ -68,11 +68,13 @@ public abstract class BaseGameFragment extends Fragment {
     protected float snapThreshold;
     protected Tree currentTree = null;
     protected Byte cachedHintAction = null;
+    protected  float touchOffsetY;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         baseTileSize = ContextCompat.getDrawable(requireContext(), R.drawable.board_tile).getIntrinsicHeight();
+        touchOffsetY = baseTileSize * 3.0f;
     }
 
     @Override
@@ -94,17 +96,11 @@ public abstract class BaseGameFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (!gameViewModel.isHoldingPiece) {
-            nextPiecePreview.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    nextPiecePreview.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    generateAndAddRandomPiece();
-                }
-            });
-        }
+
 
         initializeGameUI();
+
+        updateMovesCounter();
 
         upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(gameSettingsViewModel.getPreviewQueueSize().getValue() + 1));
         upcomingPieceList.remove(0);
@@ -132,13 +128,26 @@ public abstract class BaseGameFragment extends Fragment {
 
         int rowsToUse = (savedRows != null && savedRows > 0) ? savedRows : Jigsaw.DEFAULT_ROWS;
         int colsToUse = (savedCols != null && savedCols > 0) ? savedCols : Jigsaw.DEFAULT_COLS;
+        gameViewModel.loadGameState(rowsToUse, colsToUse);
+//        if (gameViewModel.getJigsaw() == null || rowsToUse != gameViewModel.getJigsaw().getRows()
+//                || colsToUse != gameViewModel.getJigsaw().getCols()) {
+//            jigsawGame = new Jigsaw(rowsToUse, colsToUse);
+//            gameViewModel.setJigsaw(jigsawGame);
+//        } else {
+//        jigsawGame = gameViewModel.getJigsaw();
+//        }
+        jigsawGame = gameViewModel.getJigsaw();
 
-        if (gameViewModel.getJigsaw() == null || rowsToUse != gameViewModel.getJigsaw().getRows()
-                || colsToUse != gameViewModel.getJigsaw().getCols()) {
-            jigsawGame = new Jigsaw(rowsToUse, colsToUse);
-            gameViewModel.setJigsaw(jigsawGame);
-        } else {
-            jigsawGame = gameViewModel.getJigsaw();
+
+        if (gameViewModel.getPieceList() == null || gameViewModel.getPieceList().isEmpty()) {
+            nextPiecePreview.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    nextPiecePreview.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    generateAndAddRandomPiece();
+                    gameViewModel.saveGameState();
+                }
+            });
         }
 
         Float initialScale = gameSettingsViewModel.getImageScale().getValue();
@@ -288,7 +297,7 @@ public abstract class BaseGameFragment extends Fragment {
         gameViewModel.addPiece(newGamePiece);
 
         gameContainer.requestLayout();
-        gameViewModel.isHoldingPiece = true;
+
     }
 
     protected int getDrawableResourceForPieceType(PieceType type) {
@@ -327,7 +336,7 @@ public abstract class BaseGameFragment extends Fragment {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         dX = v.getX() - event.getRawX();
-                        dY = v.getY() - event.getRawY();
+                        dY = v.getY() - event.getRawY() - touchOffsetY;
                         v.performClick();
                         v.bringToFront();
 
@@ -399,6 +408,8 @@ public abstract class BaseGameFragment extends Fragment {
 
                             generateAndAddRandomPiece();
                             startHintComputation(jigsawGame);
+
+                            gameViewModel.saveGameState();
                         }
                         else{
                             Integer snapIndex = getValidSnapIndex(v);
@@ -433,6 +444,8 @@ public abstract class BaseGameFragment extends Fragment {
 
                                 generateAndAddRandomPiece();
                                 startHintComputation(jigsawGame);
+
+                                gameViewModel.saveGameState();
                             }else{
                                 v.setX(originalX);
                                 v.setY(originalY);
@@ -580,13 +593,17 @@ public abstract class BaseGameFragment extends Fragment {
         jigsawGame = gameViewModel.getJigsaw();
         startHintComputation(jigsawGame);
 
+        gameViewModel.saveGameState();
+
         upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(gameSettingsViewModel.getPreviewQueueSize().getValue() + 1));
         upcomingPieceList.remove(0);
         updateUpcomingPiecePreviewUI();
 
         initializeGameUI();
         updateMovesCounter();
-        generateAndAddRandomPiece();
+        //generateAndAddRandomPiece();
+
+
     }
 
     protected void updateMovesCounter() {

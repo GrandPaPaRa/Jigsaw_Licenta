@@ -72,6 +72,7 @@ public class PieceQueue {
     public int getPosition() {
         return position;
     }
+    public long getSeed(){return seed;}
 
     // Set current position (careful: only for advanced use cases)
     public void setPosition(int position) {

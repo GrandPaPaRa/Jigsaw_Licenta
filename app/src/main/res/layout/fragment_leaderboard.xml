@@ -60,11 +60,11 @@
                 android:layout_marginBottom="24dp" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/leaderboardContainer"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/leaderboardRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp" />
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp" />
     </LinearLayout>
 </ScrollView>

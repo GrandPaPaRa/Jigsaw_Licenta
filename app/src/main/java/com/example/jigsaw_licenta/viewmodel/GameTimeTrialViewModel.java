@@ -25,7 +25,7 @@ public class GameTimeTrialViewModel extends GameViewModel{
 
     public GameTimeTrialViewModel(@NonNull Application application) {
         super(application);
-
+        this.SAVE_PREFS_NAME = "JigsawPrefs_TimeTrial";
         sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
         timeRemaining.setValue(sharedPreferences.getLong(KEY_TIME_REMAINING, 0));
@@ -123,5 +123,13 @@ public class GameTimeTrialViewModel extends GameViewModel{
 
     public LiveData<Integer> getGamesPlayed() {
         return gamesPlayed;
+    }
+    public static void resetTimeTrialTimer(Application application){
+        SharedPreferences sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        sharedPreferences.edit()
+                .remove(KEY_TIME_REMAINING)
+                .remove(KEY_TOTAL_SCORE)
+                .remove(KEY_GAMES_PLAYED)
+                .apply();
     }
 }

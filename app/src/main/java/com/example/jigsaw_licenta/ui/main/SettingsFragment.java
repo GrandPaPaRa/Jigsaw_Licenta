@@ -19,6 +19,7 @@ import androidx.navigation.Navigation;
 import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.ui.authentication.AuthenticationActivity;
 import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
+import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.google.android.material.slider.Slider;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -168,6 +169,8 @@ public class SettingsFragment extends Fragment {
         FirebaseAuth.getInstance().signOut();
         Intent intent = new Intent(requireActivity(), AuthenticationActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        GameViewModel.clearSavedGames(requireActivity().getApplication());
+
         startActivity(intent);
         requireActivity().finish();
     }

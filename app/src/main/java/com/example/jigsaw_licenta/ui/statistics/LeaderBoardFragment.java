@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.jigsaw_licenta.R;
+import com.example.jigsaw_licenta.ui.adapter.LeaderboardAdapter;
 import com.example.jigsaw_licenta.utils.FirebaseStatsHelper;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -31,14 +32,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class LeaderBoardFragment extends Fragment {
-    private static final int LEADERBOARD_LIMIT = 10;
-    private static final String TAG = "LeaderBoardFragment";
     private Spinner boardSizeSpinner, timeLimitSpinner, limitSpinner;
     private LinearLayout leaderboardContainer;
     private int spinnerInitCount = 0;
     private boolean initialLoadComplete = false;
+    private RecyclerView leaderboardRecyclerView;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -52,7 +54,8 @@ public class LeaderBoardFragment extends Fragment {
         boardSizeSpinner = view.findViewById(R.id.boardSizeSpinner);
         timeLimitSpinner = view.findViewById(R.id.timeLimitSpinner);
         limitSpinner = view.findViewById(R.id.limitSpinner);
-        leaderboardContainer = view.findViewById(R.id.leaderboardContainer);
+        leaderboardRecyclerView = view.findViewById(R.id.leaderboardRecyclerView);
+        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         setupSpinners();
     }
@@ -108,24 +111,11 @@ public class LeaderBoardFragment extends Fragment {
         int time = FirebaseStatsHelper.TIME_TRIAL_TIMES.get(selectedIndex); // still in seconds
         int limit = Integer.parseInt(limitSpinner.getSelectedItem().toString());
 
-        leaderboardContainer.removeAllViews();
+        //leaderboardContainer.removeAllViews();
 
         FirebaseStatsHelper.getLeaderboardData(board, time, limit, (entries) -> {
-            int rank = 1;
-            for (FirebaseStatsHelper.LeaderboardEntry entry : entries) {
-                TextView text = new TextView(requireContext());
-                text.setText(String.format(Locale.getDefault(),
-                        "%d. %s: %.1f", rank++, entry.nickname, entry.score));
-                text.setTextSize(16f);
-                text.setPadding(16, 8, 16, 8);
-                leaderboardContainer.addView(text);
-            }
-
-            if (entries.isEmpty()) {
-                TextView empty = new TextView(requireContext());
-                empty.setText("No entries found.");
-                leaderboardContainer.addView(empty);
-            }
+            LeaderboardAdapter adapter = new LeaderboardAdapter(requireContext(), entries);
+            leaderboardRecyclerView.setAdapter(adapter);
         });
     }
 }

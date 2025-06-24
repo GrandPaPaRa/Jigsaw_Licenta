@@ -65,7 +65,8 @@ public class GameSettingsTimeTrialViewModel extends GameSettingsViewModel  {
 
             // Reset game after board change
             gameViewModel.resetGame(rows, boardCols.getValue() != null ? boardCols.getValue() : DEFAULT_COLS);
-            gameViewModel.isHoldingPiece = false;
+
+            gameViewModel.saveGameState();
 
             resetTimer();
         }
@@ -83,7 +84,8 @@ public class GameSettingsTimeTrialViewModel extends GameSettingsViewModel  {
 
             // Reset game after board change
             gameViewModel.resetGame(boardRows.getValue() != null ? boardRows.getValue() : DEFAULT_ROWS, cols);
-            gameViewModel.isHoldingPiece = false;
+
+            gameViewModel.saveGameState();
 
             resetTimer();
         }

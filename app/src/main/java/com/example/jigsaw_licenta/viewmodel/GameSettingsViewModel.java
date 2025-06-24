@@ -65,7 +65,8 @@ public class GameSettingsViewModel extends AndroidViewModel {
             //warning about resetting the game here
 
             gameViewModel.resetGame(boardRows.getValue(), boardCols.getValue());
-            gameViewModel.isHoldingPiece = false;
+
+            gameViewModel.saveGameState();
         }
     }
     public LiveData<Integer> getBoardRows() {
@@ -81,7 +82,8 @@ public class GameSettingsViewModel extends AndroidViewModel {
             //warning about resetting the game here
 
             gameViewModel.resetGame(boardRows.getValue(), boardCols.getValue());
-            gameViewModel.isHoldingPiece = false;
+
+            gameViewModel.saveGameState();
         }
     }
     public LiveData<Integer> getBoardCols() {

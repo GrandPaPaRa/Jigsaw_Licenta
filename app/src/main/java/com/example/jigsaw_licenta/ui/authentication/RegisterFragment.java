@@ -15,6 +15,7 @@ import androidx.navigation.Navigation;
 import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.ui.main.MainActivity;
 import com.example.jigsaw_licenta.utils.FirebaseStatsHelper;
+import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
@@ -102,6 +103,7 @@ public class RegisterFragment extends Fragment {
                     if (task.isSuccessful()) {
                         FirebaseStatsHelper statsHelper = new FirebaseStatsHelper();
                         statsHelper.initializeNewUserStats();
+                        GameViewModel.clearSavedGames(requireActivity().getApplication());
 
                         navigateToMainActivity();
                     } else {

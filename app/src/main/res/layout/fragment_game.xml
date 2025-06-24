@@ -5,26 +5,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
-    android:clipToPadding="false">
+    android:clipToPadding="false"
+    >
+
+
+    <FrameLayout
+        android:id="@+id/gridBorderWrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_border"
+        android:padding="3dp"
+    app:layout_constraintBottom_toTopOf="@+id/nextPiecePreview"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
 
     <GridLayout
         android:id="@+id/boardContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="0dp"
-        android:layout_marginEnd="411dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:columnCount="6"
         android:orientation="horizontal"
-        android:padding="0dp"
         android:rowCount="4"
-        android:useDefaultMargins="false"
-        app:layout_constraintBottom_toTopOf="@+id/nextPiecePreview"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:useDefaultMargins="false" />
+
+</FrameLayout>
 
     <TextView
         android:id="@+id/movesTextView"
@@ -36,7 +43,7 @@
         app:layout_constraintEnd_toStartOf="@+id/HintButton"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/boardContainer" />
+        app:layout_constraintTop_toBottomOf="@+id/gridBorderWrapper" />
 
     <ImageView
         android:id="@+id/nextPiecePreview"
@@ -66,7 +73,7 @@
         android:layout_weight="2"
         android:background="@color/discard_default"
         android:padding="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/boardContainer"
+        app:layout_constraintBottom_toTopOf="@+id/gridBorderWrapper"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingsButton"
@@ -81,7 +88,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/movesTextView"
-        app:layout_constraintTop_toBottomOf="@+id/boardContainer"
+        app:layout_constraintTop_toBottomOf="@+id/gridBorderWrapper"
         app:srcCompat="@drawable/light_bulb_50"
         app:tint="#FFD700" />
 

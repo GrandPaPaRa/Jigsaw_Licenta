@@ -49,8 +49,11 @@ public class UserStatisticsFragment extends Fragment {
 
         statsHelper.loadUserNickname(nickname -> nicknameText.setText("Nickname: " + nickname));
         statsHelper.loadUserStats(boardSizes -> {
-            cachedStats = boardSizes;
-            setupSpinners(); // Populate dropdowns and react to changes
+            // Check fragment state before UI operations
+            if (isAdded() && getActivity() != null) {
+                cachedStats = boardSizes;
+                setupSpinners();
+            }
         });
 
         mockButton.setOnClickListener(v -> statsHelper.generateMockDataIfNeeded());

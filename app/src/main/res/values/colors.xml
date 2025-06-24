@@ -9,4 +9,10 @@
     <color name="error_red">#F44336</color>
     <color name="blue_text">#003366</color>     <!-- Dark Navy Blue for good contrast -->
     <color name="purple_text">#3B0066</color>
+    <color name="gold">#FFD700</color>
+    <color name="silver">#C0C0C0</color>
+    <color name="bronze">#CD7F32</color>
+    <color name="violet">#E6E6FA</color>
+    <color name ="light_purple">#E5D0FF</color>
+    <color name ="background_color">#413F42</color>
 </resources>

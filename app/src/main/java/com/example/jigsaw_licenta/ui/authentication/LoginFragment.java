@@ -14,8 +14,10 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.ui.main.MainActivity;
+import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
 
 public class LoginFragment extends Fragment {
     private EditText emailEditText, passwordEditText;
@@ -82,6 +84,7 @@ public class LoginFragment extends Fragment {
                 .addOnCompleteListener(task -> {
                     progressBar.setVisibility(View.GONE);
                     if (task.isSuccessful()) {
+                        GameViewModel.clearSavedGames(requireActivity().getApplication());
                         navigateToMainActivity();
                     } else {
                         showToast("Login failed: " + task.getException().getMessage());
