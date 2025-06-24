@@ -5,45 +5,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
-    android:clipToPadding="false"
-    >
+    android:clipToPadding="false">
 
 
+    <!-- Wrapper with rounded border and constraints -->
     <FrameLayout
         android:id="@+id/gridBorderWrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_border"
         android:padding="3dp"
-    app:layout_constraintBottom_toTopOf="@+id/nextPiecePreview"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
-
-    <GridLayout
-        android:id="@+id/boardContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:columnCount="6"
-        android:orientation="horizontal"
-        android:rowCount="4"
-        android:useDefaultMargins="false" />
-
-</FrameLayout>
-
-    <TextView
-        android:id="@+id/movesTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="30dp"
-        android:text="Moves: 0"
-        app:layout_constraintEnd_toStartOf="@+id/HintButton"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintBottom_toTopOf="@+id/nextPiecePreview"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gridBorderWrapper" />
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <GridLayout
+            android:id="@+id/boardContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:columnCount="6"
+            android:orientation="horizontal"
+            android:padding="0dp"
+            android:rowCount="4"
+            android:useDefaultMargins="false" />
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/nextPiecePreview"
@@ -55,48 +44,69 @@
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/resetGameButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Reset Game"
-        app:layout_constraintBottom_toTopOf="@+id/nextPiecePreview"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/movesTextView" />
-
     <ImageView
-        android:id="@+id/discardZone"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="30dp"
-        android:layout_weight="2"
-        android:background="@color/discard_default"
-        android:padding="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/gridBorderWrapper"
+        android:id="@+id/resetGameButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="10dp"
+        android:contentDescription="Reset Game"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingsButton"
-        app:srcCompat="@drawable/rounded_delete_24" />
+        app:srcCompat="@drawable/refresh_svgrepo_com"
+        app:tint="#4CAF50" />
 
     <ImageView
         android:id="@+id/HintButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginTop="30dp"
         android:background="@drawable/hint_button_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/movesTextView"
-        app:layout_constraintTop_toBottomOf="@+id/gridBorderWrapper"
+        app:layout_constraintTop_toBottomOf="@+id/movesTextView"
         app:srcCompat="@drawable/light_bulb_50"
         app:tint="#FFD700" />
+
+    <ProgressBar
+        android:id="@+id/hintProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="80dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="4dp"
+        android:progressDrawable="@drawable/yellow_progress_bar"
+        app:layout_constraintEnd_toEndOf="@id/HintButton"
+        app:layout_constraintStart_toStartOf="@id/HintButton"
+        app:layout_constraintTop_toBottomOf="@id/HintButton" />
+
+    <ImageView
+        android:id="@+id/discardZone"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_weight="2"
+        android:background="@color/discard_default"
+        app:layout_constraintEnd_toStartOf="@+id/movesTextView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/movesTextView"
+        app:srcCompat="@drawable/rounded_delete_24" />
+
+    <TextView
+        android:id="@+id/movesTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="Moves: 0"
+        app:layout_constraintEnd_toStartOf="@+id/HintButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/discardZone"
+        app:layout_constraintTop_toBottomOf="@+id/gridBorderWrapper" />
 
     <HorizontalScrollView
         android:id="@+id/previewScroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="70dp"
         android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -119,10 +129,10 @@
         android:layout_marginEnd="20dp"
         android:scaleX="2"
         android:scaleY="2"
-        app:tint="#2196F3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_settings_24" />
+        app:srcCompat="@drawable/baseline_settings_24"
+        app:tint="#2196F3" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

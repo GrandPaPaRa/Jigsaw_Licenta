@@ -14,10 +14,8 @@ public class AiSettingsTimeTrialViewModel extends AiSettingsViewModel {
     private final MutableLiveData<Float> depthCoefficient = new MutableLiveData<>();
 
     public AiSettingsTimeTrialViewModel(@NonNull Application application) {
-        // Call parent constructor with null GameSettingsViewModel
-        super(application, null);
 
-        // Initialize with default values (override any SharedPreferences values from parent)
+        super(application, null);
 
         simulationExplorationFactor.setValue(DEFAULT_SIMULATION_EXPLORATION_RATE);
         explorationFactor.setValue(DEFAULT_EXPLORATION);

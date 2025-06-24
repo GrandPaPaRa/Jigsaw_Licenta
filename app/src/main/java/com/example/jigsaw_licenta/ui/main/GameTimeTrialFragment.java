@@ -94,7 +94,7 @@ public class GameTimeTrialFragment extends BaseGameFragment implements GameInter
     }
 
     @Override
-    protected void onResetButtonClick() {
+    public void onResetButtonClick() {
         resetGame();
         resetTimer();
     }
@@ -116,6 +116,7 @@ public class GameTimeTrialFragment extends BaseGameFragment implements GameInter
         gameContainer = view.findViewById(R.id.gameContainerTimeTrial);
         hintButton = view.findViewById(R.id.HintButtonTimeTrial);
         previewContainer = view.findViewById(R.id.piecePreviewContainerTimeTrial);
+        progressBarHint = view.findViewById(R.id.hintProgressBarTimeTrial);
         timerTextView = view.findViewById(R.id.timerTextView);
         totalScoreTextView = view.findViewById(R.id.totalScoreTextView);
         gamesPlayedTextView = view.findViewById(R.id.gamesPlayedTextView);

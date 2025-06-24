@@ -18,7 +18,9 @@ public class Tree {
     public void cancel() {
         shouldCancel = true;
     }
-
+    public boolean getShouldCancel() {
+        return shouldCancel;
+    }
     public Tree(Jigsaw initialState, Config config, StopType stopType) {
         this.config = config;
         this.nodes = new ArrayList<>();
@@ -123,7 +125,7 @@ public class Tree {
                 System.out.println("MCTS time limit reached.");
                 break;
             }
-            if(elapsedMillis % 1000 == 0) System.out.println("Elapsed time: " + elapsedMillis);
+            //if(elapsedMillis % 1000 == 0) System.out.println("Elapsed time: " + elapsedMillis);
 
             Jigsaw state = rootState.cloneState();
             int nodeIndex = rootIndex;

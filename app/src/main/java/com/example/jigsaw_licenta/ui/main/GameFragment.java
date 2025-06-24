@@ -21,6 +21,7 @@ import com.example.jigsaw_licenta.viewmodel.AiSettingsModelFactory;
 import com.example.jigsaw_licenta.viewmodel.AiSettingsViewModel;
 import com.example.jigsaw_licenta.viewmodel.GameSettingsModelFactory;
 import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
+import com.example.jigsaw_licenta.viewmodel.GameTimeTrialViewModel;
 import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 
 public class GameFragment extends BaseGameFragment implements GameInterface {
@@ -62,6 +63,7 @@ public class GameFragment extends BaseGameFragment implements GameInterface {
         gameContainer = view.findViewById(R.id.gameContainer);
         hintButton = view.findViewById(R.id.HintButton);
         previewContainer = view.findViewById(R.id.piecePreviewContainer);
+        progressBarHint = view.findViewById(R.id.hintProgressBar);
     }
 
     @Nullable
@@ -83,9 +85,11 @@ public class GameFragment extends BaseGameFragment implements GameInterface {
         });
     }
     protected void showGameOverDialog() {
+        String moves = String.valueOf(jigsawGame.quantity);
+        float score = gameQualityScore(jigsawGame.quantity, jigsawGame.getRows() * jigsawGame.getCols());
         new AlertDialog.Builder(requireContext())
                 .setTitle("You Win")
-                .setMessage("Congratulations!")
+                .setMessage("Congratulations!\nMoves: " + moves + "\nScore: " + score)
                 .setPositiveButton("Play Again", (dialog, which) -> resetGame())
                 .setCancelable(false)
                 .show();
@@ -97,7 +101,13 @@ public class GameFragment extends BaseGameFragment implements GameInterface {
     }
 
     @Override
-    protected void onResetButtonClick() {
+    public void onResetButtonClick() {
         resetGame();
+    }
+    public float gameQualityScore(int totalMoves, int totalCells) {
+        float theoreticalMinMoves = totalCells / 3.0f;
+        float efficiency = theoreticalMinMoves / totalMoves;
+        // float penaltyFactor = (float) Math.pow(0.9, (totalMoves - theoreticalMinMoves));
+        return efficiency * 100;
     }
 }

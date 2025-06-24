@@ -19,7 +19,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Your GridLayout inside wrapper without constraints -->
         <GridLayout
             android:id="@+id/boardContainerTimeTrial"
             android:layout_width="wrap_content"
@@ -33,18 +32,6 @@
             android:useDefaultMargins="false" />
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/movesTextViewTimeTrial"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="30dp"
-        android:text="Moves: 0"
-        app:layout_constraintEnd_toStartOf="@+id/HintButtonTimeTrial"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gridBorderWrapperTimeTrial" />
-
     <ImageView
         android:id="@+id/nextPiecePreviewTimeTrial"
         android:layout_width="2dp"
@@ -55,48 +42,69 @@
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/resetGameButtonTimeTrial"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Reset Game"
-        app:layout_constraintBottom_toTopOf="@+id/nextPiecePreviewTimeTrial"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/movesTextViewTimeTrial" />
-
     <ImageView
-        android:id="@+id/discardZoneTimeTrial"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="30dp"
-        android:layout_weight="2"
-        android:background="@color/discard_default"
-        android:padding="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/gridBorderWrapperTimeTrial"
+        android:id="@+id/resetGameButtonTimeTrial"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="10dp"
+        android:contentDescription="Reset Game"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingsButtonTimeTrial"
-        app:srcCompat="@drawable/outline_auto_delete_24" />
+        app:srcCompat="@drawable/refresh_svgrepo_com"
+        app:tint="#4CAF50" />
 
     <ImageView
         android:id="@+id/HintButtonTimeTrial"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginTop="30dp"
         android:background="@drawable/hint_button_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/movesTextViewTimeTrial"
-        app:layout_constraintTop_toBottomOf="@+id/gridBorderWrapperTimeTrial"
+        app:layout_constraintTop_toBottomOf="@+id/movesTextViewTimeTrial"
         app:srcCompat="@drawable/light_bulb_50"
         app:tint="#FFD700" />
+
+    <ProgressBar
+        android:id="@+id/hintProgressBarTimeTrial"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="80dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="4dp"
+        android:progressDrawable="@drawable/yellow_progress_bar"
+        app:layout_constraintEnd_toEndOf="@id/HintButtonTimeTrial"
+        app:layout_constraintStart_toStartOf="@id/HintButtonTimeTrial"
+        app:layout_constraintTop_toBottomOf="@id/HintButtonTimeTrial" />
+
+    <ImageView
+        android:id="@+id/discardZoneTimeTrial"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_weight="2"
+        android:background="@color/discard_default"
+        app:layout_constraintEnd_toStartOf="@+id/movesTextViewTimeTrial"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/movesTextViewTimeTrial"
+        app:srcCompat="@drawable/rounded_delete_24" />
+
+    <TextView
+        android:id="@+id/movesTextViewTimeTrial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="Moves: 0"
+        app:layout_constraintEnd_toStartOf="@+id/HintButtonTimeTrial"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/discardZoneTimeTrial"
+        app:layout_constraintTop_toBottomOf="@+id/gridBorderWrapperTimeTrial" />
 
     <HorizontalScrollView
         android:id="@+id/previewScrollTimeTrial"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="70dp"
         android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -119,11 +127,12 @@
         android:layout_marginEnd="20dp"
         android:scaleX="2"
         android:scaleY="2"
-        app:tint="#2196F3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_settings_24" />
+        app:srcCompat="@drawable/baseline_settings_24"
+        app:tint="#2196F3" />
 
+    <!-- TimeTrial specific elements (kept unchanged) -->
     <LinearLayout
         android:id="@+id/scoreContainer"
         android:layout_width="wrap_content"

@@ -16,8 +16,8 @@ public class GameSettingsTimeTrialViewModel extends GameSettingsViewModel  {
     private static final String KEY_BOARD_COLS = "boardCols";
     private static final String KEY_TIME_TRIAL_DURATION = "timeTrialDuration";
     private static final float DEFAULT_TIME_TRIAL_DURATION = 1.0f;
-    private static final int DEFAULT_PREVIEW_QUEUE_SIZE = 5;
-    private static final int DEFAULT_HINT_TIME_SECONDS = 3;
+    private static final int DEFAULT_PREVIEW_QUEUE_SIZE = 6;
+    private static final int  DEFAULT_HINT_TIME_SECONDS = 3;
     private static final float DEFAULT_SCALE = 1.0f;
     public static final int DEFAULT_ROWS = 4;
     public static final int DEFAULT_COLS = 6;
@@ -42,7 +42,6 @@ public class GameSettingsTimeTrialViewModel extends GameSettingsViewModel  {
         boardCols.setValue(sharedPreferences.getInt(KEY_BOARD_COLS, DEFAULT_COLS));
         previewQueueSize.setValue(DEFAULT_PREVIEW_QUEUE_SIZE);
         hintTimeSeconds.setValue(DEFAULT_HINT_TIME_SECONDS);
-        //sharedPreferences.edit().putFloat(KEY_TIME_TRIAL_DURATION, 1.0f).apply();
         timeTrialDuration.setValue(sharedPreferences.getFloat(KEY_TIME_TRIAL_DURATION, DEFAULT_TIME_TRIAL_DURATION));
     }
 

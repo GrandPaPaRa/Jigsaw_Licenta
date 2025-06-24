@@ -33,8 +33,9 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="rounded_delete_24" />
-                            <entry key="sourceFile" value="E:\Licenta\Vector Assets\light-bulb-svgrepo-com.svg" />
+                            <entry key="assetSourceType" value="FILE" />
+                            <entry key="outputName" value="refresh_svgrepo_com" />
+                            <entry key="sourceFile" value="E:\Licenta\Vector Assets\refresh-svgrepo-com.svg" />
                           </map>
                         </option>
                       </PersistentState>

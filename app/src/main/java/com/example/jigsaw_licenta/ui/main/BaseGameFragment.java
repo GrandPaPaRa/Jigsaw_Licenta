@@ -5,28 +5,31 @@ import static com.example.jigsaw_licenta.model.Jigsaw.MAX_ITERATIONS;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.jigsaw_licenta.R;
 import com.example.jigsaw_licenta.model.Jigsaw;
@@ -35,12 +38,9 @@ import com.example.jigsaw_licenta.model.PieceType;
 import com.example.jigsaw_licenta.model.StopType;
 import com.example.jigsaw_licenta.model.Tree;
 import com.example.jigsaw_licenta.utils.Config;
-import com.example.jigsaw_licenta.utils.GameInterface;
-import com.example.jigsaw_licenta.viewmodel.AiSettingsModelFactory;
 import com.example.jigsaw_licenta.viewmodel.AiSettingsViewModel;
 import com.example.jigsaw_licenta.viewmodel.GameViewModel;
 import com.example.jigsaw_licenta.viewmodel.GameSettingsViewModel;
-import com.example.jigsaw_licenta.viewmodel.GameSettingsModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,8 @@ public abstract class BaseGameFragment extends Fragment {
     protected List<PieceType> upcomingPieceList = new ArrayList<>();
     protected ImageView hintButton;
     protected TextView movesTextView;
-    protected Button resetGameButton;
+    protected ImageView resetGameButton;
+    protected float discardThreshold;
     protected ImageView discardZone;
     protected ConstraintLayout gameContainer;
     LinearLayout previewContainer;
@@ -69,7 +70,10 @@ public abstract class BaseGameFragment extends Fragment {
     protected Tree currentTree = null;
     protected Byte cachedHintAction = null;
     protected  float touchOffsetY;
-
+    protected Handler progressHandler;
+    protected Runnable progressUpdater;
+    protected ProgressBar progressBarHint;
+    static boolean wasCanceled = false;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +110,9 @@ public abstract class BaseGameFragment extends Fragment {
         upcomingPieceList.remove(0);
         updateUpcomingPiecePreviewUI();
 
+
+
+
         startHintComputation(jigsawGame);
 
         resetGameButton.setOnClickListener(v -> onResetButtonClick());
@@ -116,6 +123,8 @@ public abstract class BaseGameFragment extends Fragment {
                 hintButton.setEnabled(false);
             }
         });
+
+
     }
 
 
@@ -158,6 +167,7 @@ public abstract class BaseGameFragment extends Fragment {
         gamePieces.clear();
         gamePieces.addAll(gameViewModel.getPieceList());
 
+        discardThreshold = baseTileSize * currentScale * 2.0f;
         snapThreshold = baseTileSize * currentScale;
         gameViewModel.setCurrentScale(currentScale);
 
@@ -354,7 +364,9 @@ public abstract class BaseGameFragment extends Fragment {
                         Integer validIndex = getValidSnapIndex(v);
                         Log.d("BaseGameFragment_Touch", "ACTION_MOVE - validIndex: " + validIndex);
                         if (validIndex != null) {
-                            discardZone.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.discard_default));
+                            discardZone.setBackgroundResource(R.color.discard_default);
+                            clearAllFilters(v);
+
                             if (ghostView == null) {
                                 ghostView = new ImageView(requireContext());
                                 ghostView.setAdjustViewBounds(true);
@@ -392,7 +404,9 @@ public abstract class BaseGameFragment extends Fragment {
                     case MotionEvent.ACTION_UP:
                         if(isViewInDiscardZone(v)){
                             removePieceFromGame(v);
-                            discardZone.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.discard_default));
+                            discardZone.setBackgroundResource(R.color.discard_default);
+                            clearAllFilters(v);
+
                             jigsawGame.performAction((byte)(jigsawGame.getRows() * jigsawGame.getCols()));
                             updateMovesCounter();
 
@@ -407,6 +421,7 @@ public abstract class BaseGameFragment extends Fragment {
                             updateUpcomingPiecePreviewUI();
 
                             generateAndAddRandomPiece();
+
                             startHintComputation(jigsawGame);
 
                             gameViewModel.saveGameState();
@@ -443,6 +458,7 @@ public abstract class BaseGameFragment extends Fragment {
                                 }
 
                                 generateAndAddRandomPiece();
+
                                 startHintComputation(jigsawGame);
 
                                 gameViewModel.saveGameState();
@@ -458,6 +474,31 @@ public abstract class BaseGameFragment extends Fragment {
             }
         });
     }
+    protected static void applyRedTintFilter(View view) {
+        if (view instanceof ImageView) {
+            // For ImageViews - apply color filter
+            ImageView imageView = (ImageView) view;
+            imageView.setColorFilter(
+                    Color.argb(150, 255, 50, 50),
+                    PorterDuff.Mode.MULTIPLY
+            );
+        } else {
+            // For other views - apply background tint
+            ViewCompat.setBackgroundTintList(view,
+                    ColorStateList.valueOf(Color.parseColor("#80FF0000")) // 50% transparent red
+            );
+        }
+    }
+    protected static void clearAllFilters(View view) {
+        if (view instanceof ImageView) {
+            ImageView imageView = (ImageView) view;
+            imageView.clearColorFilter();
+        } else {
+            ViewCompat.setBackgroundTintList(view, null);
+            view.setBackgroundColor(Color.TRANSPARENT);
+        }
+    }
+
     protected abstract void onFinishedGame();
     protected abstract void onResetButtonClick();
     @Nullable
@@ -573,7 +614,7 @@ public abstract class BaseGameFragment extends Fragment {
         float dy = pieceCenterY - discardCenterY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
-        return isInsideBounds || distance <= snapThreshold;
+        return isInsideBounds || distance <= discardThreshold;
     }
 
     protected void removePieceFromGame(View pieceView) {
@@ -586,12 +627,11 @@ public abstract class BaseGameFragment extends Fragment {
     }
 
     protected void resetGame() {
-        onDestroyView();
+        cleanupResources();
         gamePieces.clear();
         gameViewModel.clearPieces();
         gameViewModel.resetGame(gameSettingsViewModel.getBoardRows().getValue(), gameSettingsViewModel.getBoardCols().getValue());
         jigsawGame = gameViewModel.getJigsaw();
-        startHintComputation(jigsawGame);
 
         gameViewModel.saveGameState();
 
@@ -601,8 +641,14 @@ public abstract class BaseGameFragment extends Fragment {
 
         initializeGameUI();
         updateMovesCounter();
-        //generateAndAddRandomPiece();
 
+        //WE START THE HINT COMPUTATION ONLY AFTER THE VIEW HAS BEEN LOADED SO THAT THE PROGRESS BAR WORKS
+        //IM NOT EVEN MAD
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (getView() != null && isAdded()) {
+                startHintComputation(jigsawGame);
+            }
+        });
 
     }
 
@@ -615,8 +661,14 @@ public abstract class BaseGameFragment extends Fragment {
     protected void updateDiscardZoneBackground(View pieceView) {
         if (isViewInDiscardZone(pieceView)) {
             discardZone.setBackgroundColor(Color.parseColor("#FFCCCC"));
+            applyRedTintFilter(pieceView);
+
+            discardZone.setBackgroundResource(R.drawable.segmented_border);
+            discardZone.setPadding(2, 2, 2, 2); // Adjust as needed
         } else {
-            discardZone.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.discard_default));
+            discardZone.setBackgroundResource(R.color.discard_default);
+            discardZone.setPadding(0, 0, 0, 0);
+            clearAllFilters(pieceView);
         }
     }
 
@@ -713,45 +765,96 @@ public abstract class BaseGameFragment extends Fragment {
             currentTree.cancel();
         }
 
+        if (progressHandler != null && progressUpdater != null) {
+            progressHandler.removeCallbacks(progressUpdater);
+        }
+
         cachedHintAction = null;
         hintButton.setEnabled(false);
 
-        Thread mctsThread = new Thread(() -> {
-            long startTime = System.nanoTime();
+        Log.d("HINT", "startHintComputation() called");
+        Log.d("HINT", "progressBarHint null? " + (progressBarHint == null));
+        if (progressBarHint != null) {
+            Log.d("HINT", "progressBarHint isAttachedToWindow? " + progressBarHint.isAttachedToWindow());
+            Log.d("HINT", "progressBarHint visibility before: " + progressBarHint.getVisibility());
+        }
 
+        progressBarHint.setProgress(0);
+        progressBarHint.setVisibility(View.VISIBLE);
+        Log.d("HINT", "progressBarHint visibility after: " + progressBarHint.getVisibility());
+
+        // Initialize handler on main thread
+        int totalTimeMs = gameSettingsViewModel.getHintTimeSeconds().getValue() * 1000;
+        long startTime = System.currentTimeMillis();
+        final long[] lastPrintTime = {0};
+        progressHandler = new Handler(Looper.getMainLooper());
+        progressUpdater = new Runnable() {
+            @Override
+            public void run() {
+                if(getView() == null) return; // Fragment detached
+                long now = System.currentTimeMillis();
+                long elapsed = System.currentTimeMillis() - startTime;
+                int progress = (int) ((elapsed * 100) / totalTimeMs);
+                progressBarHint.setProgress(Math.min(progress, 100));
+                if (now - lastPrintTime[0] >= 500) {
+                    Log.d("PROGRESS", "Progress: " + progress + "%");
+                    lastPrintTime[0] = now;
+                }
+
+                if (elapsed < totalTimeMs) {
+                    progressHandler.postDelayed(this, 50);
+                }
+            }
+        };
+
+        progressHandler.post(progressUpdater);
+
+        Thread mctsThread = new Thread(() -> {
+            // Final computation
             float depthCoefficient = aiSettingsViewModel.getDepthCoefficient().getValue();
             float c = aiSettingsViewModel.getExplorationFactor().getValue();
             float explorationRateSimulation = aiSettingsViewModel.getSimulationExplorationFactor().getValue();
+
             Tree tree = new Tree(jigsawGame,
                     new Config(MAX_ITERATIONS,
                             (int)(depthCoefficient * Math.sqrt(jigsawGame.getRows() * jigsawGame.getCols())),
                             c,
                             explorationRateSimulation,
-                            gameSettingsViewModel.getHintTimeSeconds().getValue() * 1000
+                            totalTimeMs
                     ),
                     StopType.TIME);
             currentTree = tree;
-
             byte bestAction = tree.findBestActionbyTime();
 
-            if (bestAction != -1) {
-                cachedHintAction = bestAction;
+        if (getView() != null) {
+            requireActivity().runOnUiThread(() -> {
+                if (bestAction != -1) {
+                    cachedHintAction = bestAction;
+                    hintButton.setEnabled(true);
+                }
+            });
+        }
 
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> hintButton.setEnabled(true));
-            }
-
-            long endTime = System.nanoTime();
-            double durationMs = (endTime - startTime) / 1_000_000.0;
-            System.out.printf("MCTS took %.2f ms%n", durationMs);
+        if (progressHandler != null && progressUpdater != null) {
+            progressHandler.removeCallbacks(progressUpdater);
+        }
         });
 
         mctsThread.start();
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    private void cleanupResources() {
+        // Cancel progress updates
+        if (progressHandler != null && progressUpdater != null) {
+            progressHandler.removeCallbacks(progressUpdater);
+        }
+
+        // Cancel any ongoing hint computation
+        if (currentTree != null) {
+            currentTree.cancel();
+        }
+
+        // Clean up views
         ghostView = null;
         if (hintGhostView != null) {
             hintGhostView.setVisibility(View.GONE);
@@ -768,9 +871,13 @@ public abstract class BaseGameFragment extends Fragment {
                     gameContainer.removeView(piece.getImageView());
                 }
             }
-            gamePieces.clear();
         }
-        //Cancel any ongoing hint computation
-        currentTree.cancel();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        cleanupResources();
+        gamePieces.clear();
     }
 }
