@@ -91,7 +91,11 @@ public class Tree {
                         node.setChild(action, childIndex);
 
                         // Simulation
-                        int score = simulate(state.cloneState(), config.maxDepth - depth);
+                        Jigsaw rolloutState = state.cloneState();
+                        rolloutState.performAction(action);
+                        int score = simulate(rolloutState, config.maxDepth - depth - 1);
+
+                        //int score = simulate(state.cloneState(), config.maxDepth - depth);
 
                         // Backpropagation
                         backpropagate(score, 1, childIndex);
@@ -131,10 +135,13 @@ public class Tree {
             int nodeIndex = rootIndex;
             int depth = 0;
 
+            Node node = nodes.get(nodeIndex);
+            List<Byte> legalActions = new ArrayList<>();
+
             // Selection phase
             while (!state.hasFinished() && depth < config.maxDepth) {
-                Node node = nodes.get(nodeIndex);
-                List<Byte> legalActions = state.legalActions();
+                node = nodes.get(nodeIndex);
+                legalActions = state.legalActions();
 
                 if (node.children.size() < legalActions.size()) {
                     break; // Not fully expanded
@@ -148,9 +155,6 @@ public class Tree {
 
             // Expansion
             if (!state.hasFinished() && depth < config.maxDepth) {
-                Node node = nodes.get(nodeIndex);
-                List<Byte> legalActions = state.legalActions();
-
                 for (byte action : legalActions) {
                     if (!node.children.containsKey(action)) {
                         int childIndex = createNode();
@@ -158,7 +162,10 @@ public class Tree {
                         node.setChild(action, childIndex);
 
                         // Simulation
-                        int score = simulate(state.cloneState(), config.maxDepth - depth);
+                        Jigsaw rolloutState = state.cloneState();
+                        rolloutState.performAction(action);
+                        int score = simulate(rolloutState, config.maxDepth - depth - 1);
+                        //int score = simulate(state.cloneState(), config.maxDepth - depth);
 
                         // Backpropagation
                         backpropagate(score, 1, childIndex);
@@ -247,7 +254,7 @@ public class Tree {
 
         // Sort entries by action (ascending)
         List<Map.Entry<Byte, Integer>> sortedEntries = new ArrayList<>(node.children.entrySet());
-        sortedEntries.sort(Map.Entry.comparingByKey()); // Sort by action (byte)
+        sortedEntries.sort(Map.Entry.comparingByKey());
 
         int tolerance = iterations % sortedEntries.size();
 

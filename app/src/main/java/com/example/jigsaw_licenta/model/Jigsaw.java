@@ -275,28 +275,20 @@ public class Jigsaw implements Environment<Jigsaw, Byte> {
 //        int totalCells = rows * cols;
 //        int filledCells = Long.bitCount(board);
 //
-//        // Board fill progress (0–100)
-//        int fillScore = (int) ((filledCells / (float) totalCells));
+//        // Fill score: scaled up to 1000
+//        int fillBonus = (filledCells * 1000) / totalCells;
 //
-//        int expectedMaxPieces = totalCells / 3;
-//        int penalty = (int) (((float) quantity / expectedMaxPieces)); // up to 50 penalty
+//        // Penalty: encourage fewer pieces
+//        int penalty = quantity * 50;
 //
-//        int score = Math.max(fillScore - penalty, 0);
-//
+//        int score = fillBonus - penalty;
 //
 //        if (hasFinished()) {
-//            score += 1;
+//            score += 10000;
 //        }
 //
-//        return score;
-        return hasFinished()? 1 : 0;
-//        if (hasFinished()) return 100;
-//
-//        int filled = Long.bitCount(board);
-//        int total = rows * cols;
-//
-//        // Quadratic scaling — rewards more as you approach finish
-//        return (filled * filled * 100) / (total * total);
+//        return Math.max(score, 0); // no negative scores
+        return hasFinished()? 1 : 0; //THE BEST FOR NOW
     }
 
     @Override

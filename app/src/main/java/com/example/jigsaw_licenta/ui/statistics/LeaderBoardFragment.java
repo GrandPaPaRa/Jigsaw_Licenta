@@ -89,11 +89,10 @@ public class LeaderBoardFragment extends Fragment {
 
         AdapterView.OnItemSelectedListener refreshListener = new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                spinnerInitCount++;
-                if (spinnerInitCount >= 3 && !initialLoadComplete) {
-                    initialLoadComplete = true; // only once
-                    fetchLeaderboard();
-                } else if (initialLoadComplete) {
+                // Wait until all spinners are populated and selected
+                if (boardSizeSpinner.getSelectedItem() != null &&
+                        timeLimitSpinner.getSelectedItem() != null &&
+                        limitSpinner.getSelectedItem() != null) {
                     fetchLeaderboard();
                 }
             }
@@ -111,11 +110,20 @@ public class LeaderBoardFragment extends Fragment {
         int time = FirebaseStatsHelper.TIME_TRIAL_TIMES.get(selectedIndex); // still in seconds
         int limit = Integer.parseInt(limitSpinner.getSelectedItem().toString());
 
-        //leaderboardContainer.removeAllViews();
-
         FirebaseStatsHelper.getLeaderboardData(board, time, limit, (entries) -> {
+            if (!isAdded() || getView() == null) return;
+
             LeaderboardAdapter adapter = new LeaderboardAdapter(requireContext(), entries);
             leaderboardRecyclerView.setAdapter(adapter);
+
+            TextView emptyMessage = getView().findViewById(R.id.emptyMessage);
+            if (entries.isEmpty()) {
+                leaderboardRecyclerView.setVisibility(View.GONE);
+                emptyMessage.setVisibility(View.VISIBLE);
+            } else {
+                leaderboardRecyclerView.setVisibility(View.VISIBLE);
+                emptyMessage.setVisibility(View.GONE);
+            }
         });
     }
 }

@@ -402,7 +402,45 @@ public abstract class BaseGameFragment extends Fragment {
                         }
                         return true;
                     case MotionEvent.ACTION_UP:
-                        if(isViewInDiscardZone(v)){
+
+                        Integer snapIndex = getValidSnapIndex(v);
+                        if (snapIndex != null) {
+                            snapViewToActionIndex(snapIndex, v);
+                            ghostView.setVisibility(View.GONE);
+
+                            matchedPiece = getPieceFromView(pieceView);
+                            if (matchedPiece != null) {
+                                matchedPiece.setPlaced(true);
+                                matchedPiece.setActionSpot(snapIndex);
+                            }
+
+                            jigsawGame.performAction(snapIndex.byteValue());
+                            updateMovesCounter();
+
+                            if (hintGhostView != null) {
+                                hintGhostView.setVisibility(View.GONE);
+                                gameContainer.removeView(hintGhostView);
+                                hintGhostView = null;
+                            }
+
+                            upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(gameSettingsViewModel.getPreviewQueueSize().getValue() + 1));
+                            upcomingPieceList.remove(0);
+                            updateUpcomingPiecePreviewUI();
+
+                            if (jigsawGame.hasFinished()) {
+                                onFinishedGame();
+
+                                return true;
+                            }
+
+                            generateAndAddRandomPiece();
+
+                            startHintComputation(jigsawGame);
+
+                            gameViewModel.saveGameState();
+
+                        }
+                        else if(isViewInDiscardZone(v)){
                             removePieceFromGame(v);
                             discardZone.setBackgroundResource(R.color.discard_default);
                             clearAllFilters(v);
@@ -425,48 +463,12 @@ public abstract class BaseGameFragment extends Fragment {
                             startHintComputation(jigsawGame);
 
                             gameViewModel.saveGameState();
-                        }
-                        else{
-                            Integer snapIndex = getValidSnapIndex(v);
-                            if (snapIndex != null){
-                                snapViewToActionIndex(snapIndex, v);
-                                ghostView.setVisibility(View.GONE);
-
-                                matchedPiece = getPieceFromView(pieceView);
-                                if(matchedPiece != null){
-                                    matchedPiece.setPlaced(true);
-                                    matchedPiece.setActionSpot(snapIndex);
-                                }
-
-                                jigsawGame.performAction(snapIndex.byteValue());
-                                updateMovesCounter();
-
-                                if (hintGhostView != null) {
-                                    hintGhostView.setVisibility(View.GONE);
-                                    gameContainer.removeView(hintGhostView);
-                                    hintGhostView = null;
-                                }
-
-                                upcomingPieceList = new ArrayList<>(jigsawGame.getPieceQueue().peekNext(gameSettingsViewModel.getPreviewQueueSize().getValue() + 1));
-                                upcomingPieceList.remove(0);
-                                updateUpcomingPiecePreviewUI();
-
-                                if(jigsawGame.hasFinished()){
-                                    onFinishedGame();
-
-                                    return true;
-                                }
-
-                                generateAndAddRandomPiece();
-
-                                startHintComputation(jigsawGame);
-
-                                gameViewModel.saveGameState();
-                            }else{
+                            }
+                            else{
                                 v.setX(originalX);
                                 v.setY(originalY);
                             }
-                        }
+
                         return true;
                     default:
                         return false;

@@ -6,9 +6,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 public class AiSettingsTimeTrialViewModel extends AiSettingsViewModel {
-    private static final float DEFAULT_EXPLORATION = 1.2f;
+    private static final float DEFAULT_EXPLORATION = 1.4f;
     private static final float DEFAULT_SIMULATION_EXPLORATION_RATE = 1.0f;
-    private static final float DEFAULT_DEPTH_COEF = 2.2f;
+    private static final float DEFAULT_DEPTH_COEF = 2.4f;
     private final MutableLiveData<Float> simulationExplorationFactor = new MutableLiveData<>();
     private final MutableLiveData<Float> explorationFactor = new MutableLiveData<>();
     private final MutableLiveData<Float> depthCoefficient = new MutableLiveData<>();

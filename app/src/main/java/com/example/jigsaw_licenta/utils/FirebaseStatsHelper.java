@@ -99,28 +99,34 @@ public class FirebaseStatsHelper {
         Map<String, Object> boardSizes = new HashMap<>();
         Random random = new Random();
 
-        // Create structure for each board size
         for (String size : BOARD_SIZES) {
             Map<String, Object> sizeData = new HashMap<>();
+            String[] dims = size.split("x");
+            int rows = Integer.parseInt(dims[0].trim());
+            int cols = Integer.parseInt(dims[1].trim());
+            int totalTiles = rows * cols;
 
-            // Casual stats
             sizeData.put("completed", 5 + random.nextInt(10));
 
-            // Time trial stats
+            // Time trial data
             Map<String, Object> timeTrialData = new HashMap<>();
-            for (int time : TIME_TRIAL_TIMES) {
+            for (int timeLimit : TIME_TRIAL_TIMES) {
                 Map<String, Object> timeData = new HashMap<>();
-                timeData.put("highScore", 100 + random.nextInt(400));
-                timeData.put("attempts", 3 + random.nextInt(7));
-                timeTrialData.put(String.valueOf(time), timeData);
-            }
-            sizeData.put("timeTrial", timeTrialData);
 
+                float highScore = (int)((timeLimit / 30.0f) * 65 * (24.0f / totalTiles)) + random.nextInt(51);
+
+                timeData.put("highScore", highScore);
+                timeData.put("attempts", 3 + random.nextInt(7));
+
+                timeTrialData.put(String.valueOf(timeLimit), timeData);
+            }
+
+            sizeData.put("timeTrial", timeTrialData);
             boardSizes.put(size, sizeData);
         }
 
         statsData.put("boardSizes", boardSizes);
-        statsData.put("mockDataGenerated", true); // Mark as mock data generated
+        statsData.put("mockDataGenerated", true);
 
         userStatsRef.set(statsData)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Mock data generated for user"))
@@ -254,6 +260,9 @@ public class FirebaseStatsHelper {
                                             Object scoreObj = timeData.get("highScore");
                                             if (scoreObj instanceof Number) {
                                                 double highScore = ((Number) scoreObj).doubleValue();
+
+                                                if (highScore == 0.0) continue;
+
                                                 String userId = doc.getReference().getParent().getParent().getId();
                                                 entries.add(new LeaderboardEntry(userId, highScore));
                                                 nicknameTasks.add(db.collection("users").document(userId).get());
